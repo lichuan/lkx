@@ -1,0 +1,75 @@
+[string] __lkx_import_path_from_c_workdir__ =
+[
+  "script/"
+]
+
+import "lkxsample/school/school.lkx"
+
+//variable declaration
+[School] all_schools
+Student tallest_student
+
+internal void __lkx__hot_reloading_hook__()
+{
+  all_schools = __LKX_REMAIN_UNCHANGED__
+  tallest_student = __LKX_REMAIN_UNCHANGED__
+}
+
+//called by C host
+shared void add_school_data(CSchool cschool)
+{
+  School school
+  school.cschool = cschool
+  school.id = cschool.id()
+  school.name = ("school no.%d", school.id)
+
+  //6 grades
+  for(int32 i = 0; i < 6; ++i)
+  {
+    Grade grade
+    grade.id = i + 1
+    grade.name = ("grade no.%u", grade.id)
+    school.grades.push(grade)
+
+    //4 classes per grade
+    for(int32 i = 0; i < 4; ++i)
+    {
+      Class cls
+      cls.id = i + 1
+      cls.name = ("class no.%u", cls.id)
+      grade.classes.push(cls)
+
+      //35 students per class
+      for(int32 i = 0; i < 35; ++i)
+      {
+        Student student
+        student.height = random(130, 220)
+        student.id = i + 1
+        student.name = ("student no.%u", student.id)       
+        cls.students.push(student) 
+      }
+    }
+  }
+
+  all_schools.push(school)
+}
+
+int main()
+{
+  uint16 tallest_cm = 0
+  foreach(School school in all_schools)
+  {
+    Student student = school_find_tallest_student(school)
+
+    if(student.height <= tallest_cm)
+    {
+      continue
+    }
+
+    tallest_cm = student.height
+    tallest_student = student
+  }
+
+  printf("tallest_student id: %u, name: %s\n", tallest_student.id, tallest_student.name)
+  return 0
+}

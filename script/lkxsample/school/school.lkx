@@ -1,0 +1,26 @@
+import "lkxsample/school/grade.lkx"
+
+internal void __lkx__hot_reloading_hook__()
+{
+}
+
+shared Student school_find_tallest_student(School school)
+{
+  [Grade] grades = school.grades
+  uint16 tallest_cm = 0
+  Student tallest_student
+  foreach(Grade grade in grades)
+  {
+    Student student = grade_find_tallest_student(grade)
+
+    if(student.height <= tallest_cm)
+    {
+      continue
+    }
+
+    tallest_cm = student.height
+    tallest_student = student
+  }
+
+  return tallest_student
+}
