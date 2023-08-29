@@ -288,7 +288,7 @@ while(true)
 ```
 
 - ## Multithreading
-lkx_Hub is the execution environment in Lkx, and every script function call runs inside a specific lkx_Hub. Each lkx_hub is an independent sandbox, so you can run different lkx_Hubs on different threads to get multithreading support. However, multithreaded programming is not easy and requires you to be more careful.
+lkx_Hub is the execution environment in Lkx, and each script function call runs inside a specific lkx_Hub. Each lkx_hub is an independent sandbox, so you can run different lkx_Hubs on different threads to get multithreading support. However, multithreaded programming is not easy and requires you to be more careful.
 
 - ## Lkx vs Lua
   - simpler than Lua
