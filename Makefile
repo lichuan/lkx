@@ -11,7 +11,7 @@ SAMPLE_OBJ := lkxsample.o
 DEPFILE = $(OBJOUT)/depfile
 
 .PHONY: all clean dep
-all: $(DEPFILE) lkxsample
+all: lkxsample
 
 OBJS := $(addprefix $(OBJOUT)/, $(LKX_OBJS) $(SAMPLE_OBJ))
 CFILES = $(SAMPLE_OBJ:.o=.c) $(addprefix $(LKX_C_INC)/, $(LKX_OBJS:.o=.c))
@@ -22,13 +22,9 @@ lkxsample: $(OBJS)
 
 dep:
 	@echo "depfile obj count: $(DEP_COUNT), makefile obj count: $(words $(OBJS))"
+	$(foreach objpath, $(OBJS), $(shell mkdir -p $(dir $(objpath))))
 	$(shell rm -f $(DEPFILE))
 	$(foreach cf, $(CFILES), $(shell $(CC) $(INC) -MM $(cf) -MG -MP -MT $(addprefix $(DEPFILE)\ $(OBJOUT)/, $(subst $(LKX_C_INC)/,,$(cf:.c=.o))) >> $(DEPFILE)))
-
-$(DEPFILE):
-	$(foreach objpath, $(OBJS), $(shell mkdir -p $(dir $(objpath))))
-	$(shell rm -f $@)
-	$(foreach cf, $(CFILES), $(shell $(CC) $(INC) -MM $(cf) -MG -MP -MT $(addprefix $@\ $(OBJOUT)/, $(subst $(LKX_C_INC)/,,$(cf:.c=.o))) >> $@))
 
 $(OBJS): $(OBJOUT)/%.o: %.c
 	$(CC) $(CFLAGS) $(INC) -c $< -o $@
