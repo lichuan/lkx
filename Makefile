@@ -15,16 +15,14 @@ all: lkxsample
 
 OBJS := $(addprefix $(OBJOUT)/, $(LKX_OBJS) $(SAMPLE_OBJ))
 CFILES = $(SAMPLE_OBJ:.o=.c) $(addprefix $(LKX_C_INC)/, $(LKX_OBJS:.o=.c))
-DEP_COUNT = $(shell grep -s depfile $(DEPFILE) | wc -l)
 
 lkxsample: $(OBJS)
 	$(CC) -o $@ $^
 
 dep:
-	@echo "depfile obj count: $(DEP_COUNT), makefile obj count: $(words $(OBJS))"
 	$(foreach objpath, $(OBJS), $(shell mkdir -p $(dir $(objpath))))
 	$(shell rm -f $(DEPFILE))
-	$(foreach cf, $(CFILES), $(shell $(CC) $(INC) -MM $(cf) -MG -MP -MT $(addprefix $(DEPFILE)\ $(OBJOUT)/, $(subst $(LKX_C_INC)/,,$(cf:.c=.o))) >> $(DEPFILE)))
+	$(foreach cf, $(CFILES), $(shell $(CC) $(INC) $(cf) -MM -MT $(addprefix $(OBJOUT)/, $(subst $(LKX_C_INC)/,,$(cf:.c=.o))) >> $(DEPFILE)))
 
 $(OBJS): $(OBJOUT)/%.o: %.c
 	$(CC) $(CFLAGS) $(INC) -c $< -o $@
