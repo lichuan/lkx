@@ -8,7 +8,7 @@ shared Student grade_find_tallest_student(Grade grade)
 {
   uint16 tallest_cm = 0
   Student tallest_student
-  for(Class cls in grade.classes)
+  for(auto cls in grade.classes)
   {
     Student student = class_find_tallest_student(cls)
 

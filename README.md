@@ -14,6 +14,9 @@
 - **strictly consistent**
 - **convention-based**
 
+# Build Lkx
+Lkx is written in standard C, so you can build it on any platform which support standard C. However, Lkx only supports 64-bit platform, please make sure that your platform can run 64-bit program. I personally like to work under the Linux operating system, so the **Lkx repo** on github is also the result of my work under Linux. If you also need to build Lkx on Linux, just run the **`./build.sh`** script directly.
+
 # Lkx overview
 - ## Variable Type
 | supported type |  description|

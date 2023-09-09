@@ -9,7 +9,7 @@ shared Student school_find_tallest_student(School school)
   [Grade] grades = school.grades
   uint16 tallest_cm = 0
   Student tallest_student
-  foreach(Grade grade in grades)
+  foreach(auto grade in grades)
   {
     Student student = grade_find_tallest_student(grade)
 

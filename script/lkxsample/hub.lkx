@@ -6,7 +6,7 @@
 import "lkxsample/school/school.lkx"
 
 //variable declaration
-[School] all_schools
+[School] all_schools = new()
 Student tallest_student
 
 internal void __lkx__hot_reloading_hook__()
@@ -18,7 +18,7 @@ internal void __lkx__hot_reloading_hook__()
 //called by C host
 shared void add_school_data(CSchool cschool)
 {
-  School school
+  School school = new()
   school.cschool = cschool
   school.id = cschool.id()
   school.name = ("school no.%d", school.id)
@@ -57,7 +57,7 @@ shared void add_school_data(CSchool cschool)
 int main()
 {
   uint16 tallest_cm = 0
-  foreach(School school in all_schools)
+  foreach(auto school in all_schools)
   {
     Student student = school_find_tallest_student(school)
 
