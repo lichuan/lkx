@@ -6,8 +6,8 @@
 typedef struct lkx_Block {
   struct lkx_Block *parent;
   lkx_Var *block_var;
-  uint32 var_size;
-  uint32 var_idx;
+  uint32 size;
+  uint32 idx;
 } lkx_Block;
 
 #endif

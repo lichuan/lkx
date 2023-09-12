@@ -1,6 +1,6 @@
 import "lkxsample/school/grade.lkx"
 
-internal void __lkx__hot_reloading_hook__()
+internal void __lkx__hot_reloading__()
 {
 }
 

@@ -6,8 +6,11 @@
 typedef struct lkx_Hub {
   lkx_Block *cur_block;
   lkx_Var *var_alive;
-  uint32 var_idx;
-  uint32 var_size;
+  uint32 idx;
+  uint32 size;
+
+  //register
+  int64 RA;
 } lkx_Hub;
 
 #endif

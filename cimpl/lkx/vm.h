@@ -11,6 +11,9 @@ typedef enum lkx_OPCODE {
   OPCODE_DIV_I64,
   OPCODE_DIV_DBL,
   OPCODE_MOD_I64,
+  OPCODE_CALL,
+  OPCODE_MAP_CALL,
+  OPCODE_M_MAP_CALL,
 } lkx_OPCODE;
 
 #endif

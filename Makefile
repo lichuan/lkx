@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -O2
+CFLAGS = -O2 -std=c11
 CPPFLAGS =
 LDFLAGS =
 LKX_C_INC = cimpl
@@ -9,7 +9,7 @@ VPATH = $(LKX_C_INC)
 
 LKX_OBJS = lkx/lkx.o lkx/vm.o lkx/hub.o lkx/type/string.o lkx/type/istruct.o \
 lkx/type/ostruct.o lkx/container/set.o lkx/container/array.o lkx/container/rbtree.o \
-lkx/container/hash.o lkx/container/map.o
+lkx/container/hash.o lkx/container/map.o lkx/container/multi_map.o
 
 SAMPLE_OBJ := lkxsample.o
 DEPFILE = $(OBJOUT)/depfile

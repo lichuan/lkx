@@ -9,10 +9,19 @@ import "lkxsample/school/school.lkx"
 [School] all_schools = new()
 Student tallest_student
 
-internal void __lkx__hot_reloading_hook__()
+internal void __lkx__hot_reloading__()
 {
-  all_schools = __LKX_REMAIN_UNCHANGED__
-  tallest_student = __LKX_REMAIN_UNCHANGED__
+  __lkx__remain_unchanged = [all_schools,tallest_student]
+}
+
+internal void __lkx__pre_hot_reloading__()
+{
+
+}
+
+internal void __lkx__post_hot_reloading__()
+{
+  
 }
 
 //called by C host
