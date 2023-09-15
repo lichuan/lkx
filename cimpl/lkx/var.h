@@ -23,13 +23,13 @@ typedef struct lkx_Var {
     int64 i64;
     double dbl;
     struct lkx_String *str;
-    struct lkx_Array *array;
+    struct lkx_Array *arr;
     struct lkx_Map *map;
     struct lkx_M_Map *mmap;
     struct lkx_Set *set;
     struct lkx_Hash *hash;
-    struct lkx_IStruct *istruct;
-    struct lkx_OStruct *ostruct;
+    struct lkx_IStruct *ist;
+    struct lkx_OStruct *ost;
   };
 } lkx_Var;
 

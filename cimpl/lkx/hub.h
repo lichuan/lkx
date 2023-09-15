@@ -11,6 +11,7 @@ typedef struct lkx_Hub {
 
   //register
   int64 RA;
+  int64 RB;
 } lkx_Hub;
 
 #endif
