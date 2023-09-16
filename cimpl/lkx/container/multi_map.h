@@ -2,6 +2,7 @@
 #define __LKX__CONTAINER__MULTI_MAP__
 
 #include "lkx/container/rbtree.h"
+#include "lkx/container/multi_rbtree.h"
 
 typedef enum lkx_M_MAP_FUNC {
   FUNC_M_INSERT_K64_V64,
