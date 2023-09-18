@@ -52,133 +52,145 @@ bool lkx_rb_find_kstr(lkx_RB_Tree *tree, lkx_String *key, lkx_RB_Node **node)
 
     if(key->length == kstr->length)
     {
-      uint32 offset = 0;
-      int32 compare = -1;
-
       if(kstr->hash_id1 != 0)
       {
         if(key->hash_id1 == kstr->hash_id1 && key->hash_id2 == kstr->hash_id2)
         {
           if(kstr->length < 22)
           {
-            compare = 0;
-            goto after_compare;
+            *node = last_query;
+            return true;
           }
-          else
+
+          unsigned char *s1 = key->data + key->start_idx + 22;
+          unsigned char *s2 = kstr->data + kstr->start_idx + 22;
+
+          while(*s1 == *s2++)
           {
-            offset = 22;
-          } 
-        }
-        else
-        {
-          goto after_compare;
-        }
-      }
-
-      unsigned char *s1 = key->data + key->start_idx + offset;
-      unsigned char *s2 = kstr->data + kstr->start_idx + offset;
-
-      while(*s1 == *s2++)
-      {
-        if(*s1++ == 0)
-        {
-          compare = 0;
-          goto after_compare;
+            if(*s1++ == 0)
+            {
+              *node = last_query;
+              return true;
+            }
+          }
         }
       }
-
-after_compare:
-      if(compare == 0)
+      else
       {
-        *node = last_query;
-        return true;
+        unsigned char *s1 = key->data + key->start_idx;
+        unsigned char *s2 = kstr->data + kstr->start_idx;
+
+        while(*s1 == *s2++)
+        {
+          if(*s1++ == 0)
+          {
+            *node = last_query;
+            return true;
+          }
+        }
       }
     }
   }
 
   lkx_RB_Node *cur = tree->root;
 
-  while(true)
+  if(cur == NULL)
   {
-    if(cur == NULL)
-    {
-      return false;
-    }
+    return false;
+  }
 
-    uint32 offset = 0;
-    int32 compare = -1;
-    lkx_String *kstr = cur->kstr;
-
-    if(kstr->hash_id1 != 0)
+  if(cur->kstr->hash_id1 != 0)
+  {
+    while(true)
     {
-      if(key->hash_id1 == kstr->hash_id1 && key->hash_id2 == kstr->hash_id2 && kstr->length >= 22)
+      lkx_String *kstr = cur->kstr;
+      
+      if(key->hash_id1 > kstr->hash_id1)
       {
-        offset = 22;
+        cur = cur->right;
+      }
+      else if(key->hash_id1 < kstr->hash_id1)
+      {
+        cur = cur->left;
+      }
+      else if(key->hash_id2 > kstr->hash_id2)
+      {
+        cur = cur->right;
+      }
+      else if(key->hash_id2 < kstr->hash_id2)
+      {
+        cur = cur->left;
       }
       else
       {
-        if(key->hash_id1 > kstr->hash_id1)
+        if(kstr->length < 22)
         {
-          compare = 1;
+          *node = cur;
+          return true;
         }
-        else if(key->hash_id1 < kstr->hash_id1)
+
+        unsigned char *s1 = key->data + key->start_idx + 22;
+        unsigned char *s2 = kstr->data + kstr->start_idx + 22;
+
+        while(*s1 == *s2++)
         {
-          compare = -1;
+          if(*s1++ == 0)
+          {
+            *node = cur;
+            return true;
+          }
         }
-        else if(key->hash_id2 > kstr->hash_id2)
+
+        --s2;
+
+        if(*s1 > *s2)
         {
-          compare = 1;
-        }
-        else if(key->hash_id2 < kstr->hash_id2)
-        {
-          compare = -1;
+          cur = cur->right;
         }
         else
         {
-          compare = 0;
+          cur = cur->left;
         }
-
-        goto after_compare_1;
       }
-    }
 
-    unsigned char *s1 = key->data + key->start_idx + offset;
-    unsigned char *s2 = kstr->data + kstr->start_idx + offset;
-
-    while(*s1 == *s2++)
-    {
-      if(*s1++ == 0)
+      if(cur == NULL)
       {
-        compare = 0;
-        goto after_compare_1;
+        return false;
       }
     }
+  }
+  else
+  {
+    while(true)
+    {
+      lkx_String *kstr = cur->kstr;
+      unsigned char *s1 = key->data + key->start_idx;
+      unsigned char *s2 = kstr->data + kstr->start_idx;
 
-    --s2;
+      while(*s1 == *s2++)
+      {
+        if(*s1++ == 0)
+        {
+          *node = cur;
+          return true;
+        }
+      }
 
-    if(*s1 > *s2)
-    {
-      compare = 1;
-    }
-    else
-    {
-      compare = -1;
-    }
+      --s2;
 
-after_compare_1:
-    if(compare == 0)
-    {
-      *node = cur;
-      return true;
-    }
+      if(*s1 > *s2)
+      {
+        cur = cur->right;
+      }
+      else
+      {
+        cur = cur->left;
+      }
 
-    if(compare > 0)
-    {
-      cur = cur->right;
-    }
-    else
-    {
-      cur = cur->left;
+      if(cur == NULL)
+      {
+        return false;
+      }
     }
   }
 
@@ -218,88 +230,104 @@ bool lkx_rb_exist_k64(lkx_RB_Tree *tree, int64 key, lkx_RB_Node **node)
 bool lkx_rb_exist_kstr(lkx_RB_Tree *tree, lkx_String *key, lkx_RB_Node **node)
 {
   lkx_RB_Node *cur = tree->root;
-
-  while(true)
+  
+  if(cur == NULL)
   {
-    if(cur == NULL)
+    return false;
+  }
+  
+  if(cur->kstr->hash_id1 != 0)
+  {
+    while(true)
     {
-      return false;
-    }
-
-    uint32 offset = 0;
-    int32 compare = -1;
-    lkx_String *kstr = cur->kstr;
-
-    if(kstr->hash_id1 != 0)
-    {
-      if(key->hash_id1 == kstr->hash_id1 && key->hash_id2 == kstr->hash_id2 && kstr->length >= 22)
+      lkx_String *kstr = cur->kstr;
+      
+      if(key->hash_id1 > kstr->hash_id1)
       {
-        offset = 22;
+        cur = cur->right;
+      }
+      else if(key->hash_id1 < kstr->hash_id1)
+      {
+        cur = cur->left;
+      }
+      else if(key->hash_id2 > kstr->hash_id2)
+      {
+        cur = cur->right;
+      }
+      else if(key->hash_id2 < kstr->hash_id2)
+      {
+        cur = cur->left;
       }
       else
       {
-        if(key->hash_id1 > kstr->hash_id1)
+        if(kstr->length < 22)
         {
-          compare = 1;
+          tree->last_query = cur;
+          return true;
         }
-        else if(key->hash_id1 < kstr->hash_id1)
+
+        unsigned char *s1 = key->data + key->start_idx + 22;
+        unsigned char *s2 = kstr->data + kstr->start_idx + 22;
+
+        while(*s1 == *s2++)
         {
-          compare = -1;
+          if(*s1++ == 0)
+          {
+            tree->last_query = cur;
+            return true;
+          }
         }
-        else if(key->hash_id2 > kstr->hash_id2)
+
+        --s2;
+
+        if(*s1 > *s2)
         {
-          compare = 1;
-        }
-        else if(key->hash_id2 < kstr->hash_id2)
-        {
-          compare = -1;
+          cur = cur->right;
         }
         else
         {
-          compare = 0;
+          cur = cur->left;
         }
-
-        goto after_compare;
       }
-    }
 
-    unsigned char *s1 = key->data + key->start_idx + offset;
-    unsigned char *s2 = kstr->data + kstr->start_idx + offset;
-
-    while(*s1 == *s2++)
-    {
-      if(*s1++ == 0)
+      if(cur == NULL)
       {
-        compare = 0;
-        goto after_compare;
+        return false;
       }
     }
+  }
+  else
+  {
+    while(true)
+    {
+      lkx_String *kstr = cur->kstr;
+      unsigned char *s1 = key->data + key->start_idx;
+      unsigned char *s2 = kstr->data + kstr->start_idx;
 
-    --s2;
+      while(*s1 == *s2++)
+      {
+        if(*s1++ == 0)
+        {
+          tree->last_query = cur;
+          return true;
+        }
+      }
 
-    if(*s1 > *s2)
-    {
-      compare = 1;
-    }
-    else
-    {
-      compare = -1;
-    }
+      --s2;
 
-after_compare:
-    if(compare == 0)
-    {
-      tree->last_query = cur;
-      return true;
-    }
+      if(*s1 > *s2)
+      {
+        cur = cur->right;
+      }
+      else
+      {
+        cur = cur->left;
+      }
 
-    if(compare > 0)
-    {
-      cur = cur->right;
-    }
-    else
-    {
-      cur = cur->left;
+      if(cur == NULL)
+      {
+        return false;
+      }
     }
   }
 
@@ -311,6 +339,7 @@ bool lkx_rb_insert_k64(lkx_RB_Tree *tree, int64 key, lkx_RB_Node *node, lkx_RB_N
   if(tree->root == NULL)
   {
     tree->root = node;
+    node->color = RB_COLOR_BLACK;
     return false;
   }
 
@@ -325,6 +354,17 @@ bool lkx_rb_insert_k64(lkx_RB_Tree *tree, int64 key, lkx_RB_Node *node, lkx_RB_N
     node->color = RB_COLOR_BLACK;
     node->left = tree->root->left;
     node->right = tree->root->right;
+
+    if(tree->root->left != NULL)
+    {
+      tree->root->left->parent = node;
+    }
+
+    if(tree->root->right != NULL)
+    {
+      tree->root->right->parent = node;
+    }
+    
     tree->root = node;
     return true;
   }
@@ -381,6 +421,16 @@ bool lkx_rb_insert_k64(lkx_RB_Tree *tree, int64 key, lkx_RB_Node *node, lkx_RB_N
       node->parent = parent;
       node->left = cur->left;
       node->right = cur->right;
+
+      if(cur->left != NULL)
+      {
+        cur->left->parent = node;
+      }
+
+      if(cur->right != NULL)
+      {
+        cur->right->parent = node;
+      }
 
       if(left)
       {
@@ -581,6 +631,7 @@ bool lkx_rb_insert_kstr(lkx_RB_Tree *tree, lkx_String *key, lkx_RB_Node *node, l
   if(tree->root == NULL)
   {
     tree->root = node;
+    node->color = RB_COLOR_BLACK;
     return false;
   }
 
@@ -588,55 +639,102 @@ bool lkx_rb_insert_kstr(lkx_RB_Tree *tree, lkx_String *key, lkx_RB_Node *node, l
 
   if(key->length == kstr->length)
   {
-    uint32 offset = 0;
-    int32 compare = -1;
-
     if(kstr->hash_id1 != 0)
     {
       if(key->hash_id1 == kstr->hash_id1 && key->hash_id2 == kstr->hash_id2)
       {
         if(kstr->length < 22)
         {
-          compare = 0;
-          goto after_compare;
+          if(tree->last_query == tree->root)
+          {
+            tree->last_query = NULL;
+          }
+          
+          *replaced_node = tree->root;
+          node->color = RB_COLOR_BLACK;
+          node->left = tree->root->left;
+          node->right = tree->root->right;
+
+          if(tree->root->left != NULL)
+          {
+            tree->root->left->parent = node;
+          }
+
+          if(tree->root->right != NULL)
+          {
+            tree->root->right->parent = node;
+          }
+
+          tree->root = node;
+          return true;
         }
-        else
+
+        unsigned char *s1 = key->data + key->start_idx + 22;
+        unsigned char *s2 = kstr->data + kstr->start_idx + 22;
+
+        while(*s1 == *s2++)
         {
-          offset = 22;
-        } 
-      }
-      else
-      {
-        goto after_compare;
+          if(*s1++ == 0)
+          {
+            if(tree->last_query == tree->root)
+            {
+              tree->last_query = NULL;
+            }
+            
+            *replaced_node = tree->root;
+            node->color = RB_COLOR_BLACK;
+            node->left = tree->root->left;
+            node->right = tree->root->right;
+
+            if(tree->root->left != NULL)
+            {
+              tree->root->left->parent = node;
+            }
+
+            if(tree->root->right != NULL)
+            {
+              tree->root->right->parent = node;
+            }
+
+            tree->root = node;
+            return true;
+          }
+        }
       }
     }
-
-    unsigned char *s1 = key->data + key->start_idx + offset;
-    unsigned char *s2 = kstr->data + kstr->start_idx + offset;
-
-    while(*s1 == *s2++)
+    else
     {
-      if(*s1++ == 0)
-      {
-        compare = 0;
-        goto after_compare;
-      }
-    }
+      unsigned char *s1 = key->data + key->start_idx;
+      unsigned char *s2 = kstr->data + kstr->start_idx;
 
-after_compare:
-    if(compare == 0)
-    {
-      if(tree->last_query == tree->root)
+      while(*s1 == *s2++)
       {
-        tree->last_query = NULL;
+        if(*s1++ == 0)
+        {
+          if(tree->last_query == tree->root)
+          {
+            tree->last_query = NULL;
+          }
+          
+          *replaced_node = tree->root;
+          node->color = RB_COLOR_BLACK;
+          node->left = tree->root->left;
+          node->right = tree->root->right;
+
+          if(tree->root->left != NULL)
+          {
+            tree->root->left->parent = node;
+          }
+
+          if(tree->root->right != NULL)
+          {
+            tree->root->right->parent = node;
+          }
+
+          tree->root = node;
+          return true;
+        }
       }
-      
-      *replaced_node = tree->root;
-      node->color = RB_COLOR_BLACK;
-      node->left = tree->root->left;
-      node->right = tree->root->right;
-      tree->root = node;
-      return true;
     }
   }
   
@@ -644,154 +742,57 @@ after_compare:
   lkx_RB_Node *parent;
   bool left;
 
-  while(true)
+  if(cur->kstr->hash_id1 != 0)
   {
-    parent = cur;
-    uint32 offset = 0;
-    int32 compare = -1;
-    lkx_String *kstr = cur->kstr;
-
-    if(kstr->hash_id1 != 0)
+    while(true)
     {
-      if(key->hash_id1 == kstr->hash_id1 && key->hash_id2 == kstr->hash_id2 && kstr->length >= 22)
+      kstr = cur->kstr;
+      parent = cur;
+            
+      if(key->hash_id1 > kstr->hash_id1)
       {
-        offset = 22;
+        cur = cur->right;
+        left = false;
+      }
+      else if(key->hash_id1 < kstr->hash_id1)
+      {
+        cur = cur->left;
+        left = true;
+      }
+      else if(key->hash_id2 > kstr->hash_id2)
+      {
+        cur = cur->right;
+        left = false;
+      }
+      else if(key->hash_id2 < kstr->hash_id2)
+      {
+        cur = cur->left;
+        left = true;
       }
       else
       {
-        if(key->hash_id1 > kstr->hash_id1)
+        unsigned char *s1 = key->data + key->start_idx + 22;
+        unsigned char *s2 = kstr->data + kstr->start_idx + 22;
+
+        while(*s1++ == *s2++);
+        --s2;
+        --s1;
+
+        if(*s1 > *s2)
         {
-          compare = 1;
-        }
-        else if(key->hash_id1 < kstr->hash_id1)
-        {
-          compare = -1;
-        }
-        else if(key->hash_id2 > kstr->hash_id2)
-        {
-          compare = 1;
-        }
-        else if(key->hash_id2 < kstr->hash_id2)
-        {
-          compare = -1;
+          cur = cur->right;
+          left = false;
         }
         else
         {
-          compare = 0;
+          cur = cur->left;
+          left = true;
         }
-
-        goto after_compare_1;
-      }
-    }
-
-    unsigned char *s1 = key->data + key->start_idx + offset;
-    unsigned char *s2 = kstr->data + kstr->start_idx + offset;
-
-    while(*s1 == *s2++)
-    {
-      if(*s1++ == 0)
-      {
-        compare = 0;
-        goto after_compare_1;
-      }
-    }
-
-    --s2;
-
-    if(*s1 > *s2)
-    {
-      compare = 1;
-    }
-    else
-    {
-      compare = -1;
-    }
-
-after_compare_1:
-    if(compare < 0)
-    {
-      cur = cur->left;
-      left = true;
-    }
-    else
-    {
-      cur = cur->right;
-      left = false;
-    }
-
-    if(cur == NULL)
-    {
-      node->parent = parent;
-
-      if(left)
-      {
-        parent->left = node;
-      }
-      else
-      {
-        parent->right = node;
       }
       
-      if(parent->color == RB_COLOR_BLACK)
+      if(cur == NULL)
       {
-        return false;
-      }
-
-      break;
-    }
-
-    kstr = cur->kstr;
-    
-    if(key->length == kstr->length)
-    {
-      uint32 offset = 0;
-      int32 compare = -1;
-
-      if(kstr->hash_id1 != 0)
-      {
-        if(key->hash_id1 == kstr->hash_id1 && key->hash_id2 == kstr->hash_id2)
-        {
-          if(kstr->length < 22)
-          {
-            compare = 0;
-            goto after_compare_2;
-          }
-          else
-          {
-            offset = 22;
-          } 
-        }
-        else
-        {
-          goto after_compare_2;
-        }
-      }
-
-      unsigned char *s1 = key->data + key->start_idx + offset;
-      unsigned char *s2 = kstr->data + kstr->start_idx + offset;
-
-      while(*s1 == *s2++)
-      {
-        if(*s1++ == 0)
-        {
-          compare = 0;
-          goto after_compare_2;
-        }
-      }
-
-  after_compare_2:
-      if(compare == 0)
-      {
-        if(tree->last_query == cur)
-        {
-          tree->last_query = NULL;
-        }
-
-        *replaced_node = cur;
-        node->color = cur->color;
         node->parent = parent;
-        node->left = cur->left;
-        node->right = cur->right;
 
         if(left)
         {
@@ -801,12 +802,195 @@ after_compare_1:
         {
           parent->right = node;
         }
+        
+        if(parent->color == RB_COLOR_BLACK)
+        {
+          return false;
+        }
 
-        return true;
+        break;
+      }
+
+      kstr = cur->kstr;
+
+      if(key->length == kstr->length)
+      {
+        if(key->hash_id1 == kstr->hash_id1 && key->hash_id2 == kstr->hash_id2)
+        {
+          if(kstr->length < 22)
+          {
+            if(tree->last_query == cur)
+            {
+              tree->last_query = NULL;
+            }
+
+            *replaced_node = cur;
+            node->color = cur->color;
+            node->parent = parent;
+            node->left = cur->left;
+            node->right = cur->right;
+
+            if(cur->left != NULL)
+            {
+              cur->left->parent = node;
+            }
+
+            if(cur->right != NULL)
+            {
+              cur->right->parent = node;
+            }
+
+            if(left)
+            {
+              parent->left = node;
+            }
+            else
+            {
+              parent->right = node;
+            }
+
+            return true;
+          }
+          else
+          {
+            unsigned char *s1 = key->data + key->start_idx + 22;
+            unsigned char *s2 = kstr->data + kstr->start_idx + 22;
+
+            while(*s1 == *s2++)
+            {
+              if(*s1++ == 0)
+              {
+                if(tree->last_query == cur)
+                {
+                  tree->last_query = NULL;
+                }
+
+                *replaced_node = cur;
+                node->color = cur->color;
+                node->parent = parent;
+                node->left = cur->left;
+                node->right = cur->right;
+
+                if(cur->left != NULL)
+                {
+                  cur->left->parent = node;
+                }
+
+                if(cur->right != NULL)
+                {
+                  cur->right->parent = node;
+                }
+
+                if(left)
+                {
+                  parent->left = node;
+                }
+                else
+                {
+                  parent->right = node;
+                }
+
+                return true;
+              }
+            }
+          }
+        }
       }
     }
   }
+  else
+  {
+    while(true)
+    {
+      parent = cur;
+      kstr = cur->kstr;
+      unsigned char *s1 = key->data + key->start_idx;
+      unsigned char *s2 = kstr->data + kstr->start_idx;
 
+      while(*s1++ == *s2++);
+      --s2;
+      --s1;
+
+      if(*s1 > *s2)
+      {
+        cur = cur->right;
+        left = false;
+      }
+      else
+      {
+        cur = cur->left;
+        left = true;
+      }
+
+      if(cur == NULL)
+      {
+        node->parent = parent;
+
+        if(left)
+        {
+          parent->left = node;
+        }
+        else
+        {
+          parent->right = node;
+        }
+        
+        if(parent->color == RB_COLOR_BLACK)
+        {
+          return false;
+        }
+
+        break;
+      }
+
+      kstr = cur->kstr;
+
+      if(key->length == kstr->length)
+      {
+        unsigned char *s1 = key->data + key->start_idx;
+        unsigned char *s2 = kstr->data + kstr->start_idx;
+
+        while(*s1 == *s2++)
+        {
+          if(*s1++ == 0)
+          {
+            if(tree->last_query == cur)
+            {
+              tree->last_query = NULL;
+            }
+
+            *replaced_node = cur;
+            node->color = cur->color;
+            node->parent = parent;
+            node->left = cur->left;
+            node->right = cur->right;
+
+            if(cur->left != NULL)
+            {
+              cur->left->parent = node;
+            }
+
+            if(cur->right != NULL)
+            {
+              cur->right->parent = node;
+            }
+
+            if(left)
+            {
+              parent->left = node;
+            }
+            else
+            {
+              parent->right = node;
+            }
+
+            return true;
+          }
+        }
+      }
+    }
+  }
+  
   cur = node;
   lkx_RB_Node *grandpa, *uncle;
   bool parent_left;
@@ -1464,247 +1648,580 @@ bool lkx_rb_erase_kstr(lkx_RB_Tree *tree, lkx_String *key, lkx_RB_Node **node)
   lkx_RB_Node *parent, *brother;
   lkx_RB_Node null_node = {.color = RB_COLOR_BLACK};
 
-  while(true)
+  if(cur == NULL)
   {
-    if(cur == NULL)
-    {
-      return false;
-    }
-
-    parent = cur->parent;
-    lkx_String *kstr = cur->kstr;
-    int32 compare = -1;
-    uint32 offset = 0;
-
-    if(kstr->hash_id1 != 0)
-    {
-      if(key->hash_id1 == kstr->hash_id1 && key->hash_id2 == kstr->hash_id2 && kstr->length >= 22)
-      {
-        offset = 22;
-      }
-      else
-      {
-        if(key->hash_id1 > kstr->hash_id1)
-        {
-          compare = 1;
-        }
-        else if(key->hash_id1 < kstr->hash_id1)
-        {
-          compare = -1;
-        }
-        else if(key->hash_id2 > kstr->hash_id2)
-        {
-          compare = 1;
-        }
-        else if(key->hash_id2 < kstr->hash_id2)
-        {
-          compare = -1;
-        }
-        else
-        {
-          compare = 0;
-        }
-
-        goto after_compare;
-      }
-    }
-
-    unsigned char *s1 = key->data + key->start_idx + offset;
-    unsigned char *s2 = kstr->data + kstr->start_idx + offset;
-
-    while(*s1 == *s2++)
-    {
-      if(*s1++ == 0)
-      {
-        compare = 0;
-        goto after_compare;
-      }
-    }
-
-    --s2;
-
-    if(*s1 > *s2)
-    {
-      compare = 1;
-    }
-    else
-    {
-      compare = -1;
-    }
-
-after_compare:
-    if(compare == 0)
-    {
-      if(tree->last_query == cur)
-      {
-        tree->last_query = NULL;
-      }
-
-      lkx_RB_Node *left_child = cur->left;
-      lkx_RB_Node *right_child = cur->right;
-      *node = cur;
-
-      if(left_child == NULL && right_child == NULL)
-      {
-        if(cur == tree->root)
-        {
-          tree->root = NULL;
-          return true;
-        }
-
-        if(left)
-        {
-          parent->left = NULL;
-        }
-        else
-        {
-          parent->right = NULL;
-        }
-
-        if(cur->color == RB_COLOR_RED)
-        {
-          return true;
-        }
-
-        null_node = *cur;
-        goto black_leaf;
-      }
-      else if(left_child != NULL && right_child != NULL)
-      {
-        lkx_RB_Node *r_left = right_child;
-
-        while(r_left->left != NULL)
-        {
-          r_left = r_left->left;
-        }
-        
-        if(cur == tree->root)
-        {
-          tree->root = r_left;
-        }
-        else if(left)
-        {
-          parent->left = r_left;
-        }
-        else
-        {
-          parent->right = r_left;
-        }
-
-        lkx_RB_COLOR r_left_color = r_left->color;
-        r_left->color = cur->color;
-        r_left->left = cur->left;
-        cur->left->parent = r_left;
-
-        if(r_left == right_child)
-        {
-          r_left->parent = parent;
-
-          if(r_left_color == RB_COLOR_RED)
-          {
-            return true;
-          }
-
-          if(right_child->right != NULL)
-          {
-            right_child->right->color = RB_COLOR_BLACK;
-            return true;
-          }
-
-          r_left->right = NULL;
-          null_node.parent = r_left;
-          left = false;
-          goto black_leaf;
-        }
-        
-        if(r_left_color == RB_COLOR_RED)
-        {
-          r_left->parent->left = NULL;
-          r_left->parent = parent;
-          r_left->right = cur->right;
-          cur->right->parent = r_left;
-          return true;
-        }
-
-        if(r_left->right != NULL)
-        {
-          r_left->right->color = RB_COLOR_BLACK;
-          r_left->parent->left = r_left->right;
-          r_left->right->parent = r_left->parent;
-          r_left->parent = parent;
-          r_left->right = cur->right;
-          cur->right->parent = r_left;
-          return true;
-        }
-
-        left = true;
-        null_node.parent = r_left->parent;
-        r_left->parent->left = NULL;
-        r_left->parent = parent;
-        r_left->right = cur->right;
-        cur->right->parent = r_left;
-        goto black_leaf;
-      }
-      else if(left_child != NULL)
-      {
-        left_child->color = RB_COLOR_BLACK;
-
-        if(cur == tree->root)
-        {
-          tree->root = left_child;
-          left_child->parent = NULL;
-          return true;
-        }
-
-        if(left)
-        {
-          parent->left = left_child;
-        }
-        else
-        {
-          parent->right = left_child;
-        }
-
-        left_child->parent = parent;
-      }
-      else
-      {
-        right_child->color = RB_COLOR_BLACK;
-
-        if(cur == tree->root)
-        {
-          tree->root = right_child;
-          right_child->parent = NULL;
-          return true;
-        }
-
-        if(left)
-        {
-          parent->left = right_child;
-        }
-        else
-        {
-          parent->right = right_child;
-        }
-
-        right_child->parent = parent;
-      }
-
-      return true;
-    }
-
-    if(compare > 0)
-    {
-      cur = cur->right;
-      left = false;
-    }
-    else
-    {
-      cur = cur->left;
-      left = true;
-    }
+    return false;
   }
 
+  lkx_String *kstr = cur->kstr;
+
+  if(kstr->hash_id1 != 0)
+  {
+    while(true)
+    {
+      parent = cur->parent;
+      kstr = cur->kstr;
+
+      if(key->hash_id1 > kstr->hash_id1)
+      {
+        cur = cur->right;
+        left = false;
+      }
+      else if(key->hash_id1 < kstr->hash_id1)
+      {
+        cur = cur->left;
+        left = true;
+      }
+      else if(key->hash_id2 > kstr->hash_id2)
+      {
+        cur = cur->right;
+        left = false;
+      }
+      else if(key->hash_id2 < kstr->hash_id2)
+      {
+        cur = cur->left;
+        left = true;
+      }
+      else
+      {
+        if(kstr->length < 22)
+        {
+          if(tree->last_query == cur)
+          {
+            tree->last_query = NULL;
+          }
+
+          lkx_RB_Node *left_child = cur->left;
+          lkx_RB_Node *right_child = cur->right;
+          *node = cur;
+
+          if(left_child == NULL && right_child == NULL)
+          {
+            if(cur == tree->root)
+            {
+              tree->root = NULL;
+              return true;
+            }
+
+            if(left)
+            {
+              parent->left = NULL;
+            }
+            else
+            {
+              parent->right = NULL;
+            }
+
+            if(cur->color == RB_COLOR_RED)
+            {
+              return true;
+            }
+
+            null_node = *cur;
+            goto black_leaf;
+          }
+          else if(left_child != NULL && right_child != NULL)
+          {
+            lkx_RB_Node *r_left = right_child;
+
+            while(r_left->left != NULL)
+            {
+              r_left = r_left->left;
+            }
+            
+            if(cur == tree->root)
+            {
+              tree->root = r_left;
+            }
+            else if(left)
+            {
+              parent->left = r_left;
+            }
+            else
+            {
+              parent->right = r_left;
+            }
+
+            lkx_RB_COLOR r_left_color = r_left->color;
+            r_left->color = cur->color;
+            r_left->left = cur->left;
+            cur->left->parent = r_left;
+
+            if(r_left == right_child)
+            {
+              r_left->parent = parent;
+
+              if(r_left_color == RB_COLOR_RED)
+              {
+                return true;
+              }
+
+              if(right_child->right != NULL)
+              {
+                right_child->right->color = RB_COLOR_BLACK;
+                return true;
+              }
+
+              r_left->right = NULL;
+              null_node.parent = r_left;
+              left = false;
+              goto black_leaf;
+            }
+            
+            if(r_left_color == RB_COLOR_RED)
+            {
+              r_left->parent->left = NULL;
+              r_left->parent = parent;
+              r_left->right = cur->right;
+              cur->right->parent = r_left;
+              return true;
+            }
+
+            if(r_left->right != NULL)
+            {
+              r_left->right->color = RB_COLOR_BLACK;
+              r_left->parent->left = r_left->right;
+              r_left->right->parent = r_left->parent;
+              r_left->parent = parent;
+              r_left->right = cur->right;
+              cur->right->parent = r_left;
+              return true;
+            }
+
+            left = true;
+            null_node.parent = r_left->parent;
+            r_left->parent->left = NULL;
+            r_left->parent = parent;
+            r_left->right = cur->right;
+            cur->right->parent = r_left;
+            goto black_leaf;
+          }
+          else if(left_child != NULL)
+          {
+            left_child->color = RB_COLOR_BLACK;
+
+            if(cur == tree->root)
+            {
+              tree->root = left_child;
+              left_child->parent = NULL;
+              return true;
+            }
+
+            if(left)
+            {
+              parent->left = left_child;
+            }
+            else
+            {
+              parent->right = left_child;
+            }
+
+            left_child->parent = parent;
+          }
+          else
+          {
+            right_child->color = RB_COLOR_BLACK;
+
+            if(cur == tree->root)
+            {
+              tree->root = right_child;
+              right_child->parent = NULL;
+              return true;
+            }
+
+            if(left)
+            {
+              parent->left = right_child;
+            }
+            else
+            {
+              parent->right = right_child;
+            }
+
+            right_child->parent = parent;
+          }
+
+          return true;
+        }
+
+        unsigned char *s1 = key->data + key->start_idx + 22;
+        unsigned char *s2 = kstr->data + kstr->start_idx + 22;
+
+        while(*s1 == *s2++)
+        {
+          if(*s1++ == 0)
+          {
+            if(tree->last_query == cur)
+            {
+              tree->last_query = NULL;
+            }
+
+            lkx_RB_Node *left_child = cur->left;
+            lkx_RB_Node *right_child = cur->right;
+            *node = cur;
+
+            if(left_child == NULL && right_child == NULL)
+            {
+              if(cur == tree->root)
+              {
+                tree->root = NULL;
+                return true;
+              }
+
+              if(left)
+              {
+                parent->left = NULL;
+              }
+              else
+              {
+                parent->right = NULL;
+              }
+
+              if(cur->color == RB_COLOR_RED)
+              {
+                return true;
+              }
+
+              null_node = *cur;
+              goto black_leaf;
+            }
+            else if(left_child != NULL && right_child != NULL)
+            {
+              lkx_RB_Node *r_left = right_child;
+
+              while(r_left->left != NULL)
+              {
+                r_left = r_left->left;
+              }
+              
+              if(cur == tree->root)
+              {
+                tree->root = r_left;
+              }
+              else if(left)
+              {
+                parent->left = r_left;
+              }
+              else
+              {
+                parent->right = r_left;
+              }
+
+              lkx_RB_COLOR r_left_color = r_left->color;
+              r_left->color = cur->color;
+              r_left->left = cur->left;
+              cur->left->parent = r_left;
+
+              if(r_left == right_child)
+              {
+                r_left->parent = parent;
+
+                if(r_left_color == RB_COLOR_RED)
+                {
+                  return true;
+                }
+
+                if(right_child->right != NULL)
+                {
+                  right_child->right->color = RB_COLOR_BLACK;
+                  return true;
+                }
+
+                r_left->right = NULL;
+                null_node.parent = r_left;
+                left = false;
+                goto black_leaf;
+              }
+              
+              if(r_left_color == RB_COLOR_RED)
+              {
+                r_left->parent->left = NULL;
+                r_left->parent = parent;
+                r_left->right = cur->right;
+                cur->right->parent = r_left;
+                return true;
+              }
+
+              if(r_left->right != NULL)
+              {
+                r_left->right->color = RB_COLOR_BLACK;
+                r_left->parent->left = r_left->right;
+                r_left->right->parent = r_left->parent;
+                r_left->parent = parent;
+                r_left->right = cur->right;
+                cur->right->parent = r_left;
+                return true;
+              }
+
+              left = true;
+              null_node.parent = r_left->parent;
+              r_left->parent->left = NULL;
+              r_left->parent = parent;
+              r_left->right = cur->right;
+              cur->right->parent = r_left;
+              goto black_leaf;
+            }
+            else if(left_child != NULL)
+            {
+              left_child->color = RB_COLOR_BLACK;
+
+              if(cur == tree->root)
+              {
+                tree->root = left_child;
+                left_child->parent = NULL;
+                return true;
+              }
+
+              if(left)
+              {
+                parent->left = left_child;
+              }
+              else
+              {
+                parent->right = left_child;
+              }
+
+              left_child->parent = parent;
+            }
+            else
+            {
+              right_child->color = RB_COLOR_BLACK;
+
+              if(cur == tree->root)
+              {
+                tree->root = right_child;
+                right_child->parent = NULL;
+                return true;
+              }
+
+              if(left)
+              {
+                parent->left = right_child;
+              }
+              else
+              {
+                parent->right = right_child;
+              }
+
+              right_child->parent = parent;
+            }
+
+            return true;
+          }
+        }
+
+        --s2;
+
+        if(*s1 > *s2)
+        {
+          cur = cur->right;
+          left = false;
+        }
+        else
+        {
+          cur = cur->left;
+          left = true;
+        }
+      }
+
+      if(cur == NULL)
+      {
+        return false;
+      }
+    }
+  }
+  else
+  {
+    while(true)
+    {
+      parent = cur->parent;
+      kstr = cur->kstr;
+      unsigned char *s1 = key->data + key->start_idx;
+      unsigned char *s2 = kstr->data + kstr->start_idx;
+
+      while(*s1 == *s2++)
+      {
+        if(*s1++ == 0)
+        {
+          if(tree->last_query == cur)
+          {
+            tree->last_query = NULL;
+          }
+
+          lkx_RB_Node *left_child = cur->left;
+          lkx_RB_Node *right_child = cur->right;
+          *node = cur;
+
+          if(left_child == NULL && right_child == NULL)
+          {
+            if(cur == tree->root)
+            {
+              tree->root = NULL;
+              return true;
+            }
+
+            if(left)
+            {
+              parent->left = NULL;
+            }
+            else
+            {
+              parent->right = NULL;
+            }
+
+            if(cur->color == RB_COLOR_RED)
+            {
+              return true;
+            }
+
+            null_node = *cur;
+            goto black_leaf;
+          }
+          else if(left_child != NULL && right_child != NULL)
+          {
+            lkx_RB_Node *r_left = right_child;
+
+            while(r_left->left != NULL)
+            {
+              r_left = r_left->left;
+            }
+            
+            if(cur == tree->root)
+            {
+              tree->root = r_left;
+            }
+            else if(left)
+            {
+              parent->left = r_left;
+            }
+            else
+            {
+              parent->right = r_left;
+            }
+
+            lkx_RB_COLOR r_left_color = r_left->color;
+            r_left->color = cur->color;
+            r_left->left = cur->left;
+            cur->left->parent = r_left;
+
+            if(r_left == right_child)
+            {
+              r_left->parent = parent;
+
+              if(r_left_color == RB_COLOR_RED)
+              {
+                return true;
+              }
+
+              if(right_child->right != NULL)
+              {
+                right_child->right->color = RB_COLOR_BLACK;
+                return true;
+              }
+
+              r_left->right = NULL;
+              null_node.parent = r_left;
+              left = false;
+              goto black_leaf;
+            }
+            
+            if(r_left_color == RB_COLOR_RED)
+            {
+              r_left->parent->left = NULL;
+              r_left->parent = parent;
+              r_left->right = cur->right;
+              cur->right->parent = r_left;
+              return true;
+            }
+
+            if(r_left->right != NULL)
+            {
+              r_left->right->color = RB_COLOR_BLACK;
+              r_left->parent->left = r_left->right;
+              r_left->right->parent = r_left->parent;
+              r_left->parent = parent;
+              r_left->right = cur->right;
+              cur->right->parent = r_left;
+              return true;
+            }
+
+            left = true;
+            null_node.parent = r_left->parent;
+            r_left->parent->left = NULL;
+            r_left->parent = parent;
+            r_left->right = cur->right;
+            cur->right->parent = r_left;
+            goto black_leaf;
+          }
+          else if(left_child != NULL)
+          {
+            left_child->color = RB_COLOR_BLACK;
+
+            if(cur == tree->root)
+            {
+              tree->root = left_child;
+              left_child->parent = NULL;
+              return true;
+            }
+
+            if(left)
+            {
+              parent->left = left_child;
+            }
+            else
+            {
+              parent->right = left_child;
+            }
+
+            left_child->parent = parent;
+          }
+          else
+          {
+            right_child->color = RB_COLOR_BLACK;
+
+            if(cur == tree->root)
+            {
+              tree->root = right_child;
+              right_child->parent = NULL;
+              return true;
+            }
+
+            if(left)
+            {
+              parent->left = right_child;
+            }
+            else
+            {
+              parent->right = right_child;
+            }
+
+            right_child->parent = parent;
+          }
+
+          return true;
+        }
+      }
+
+      --s2;
+
+      if(*s1 > *s2)
+      {
+        cur = cur->right;
+        left = false;
+      }
+      else
+      {
+        cur = cur->left;
+        left = true;
+      }
+
+      if(cur == NULL)
+      {
+        return false;
+      }
+    }
+  }
+  
 black_leaf:
   parent = null_node.parent;
 
