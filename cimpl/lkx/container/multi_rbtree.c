@@ -1,7 +1,7 @@
 #include <stddef.h>
 #include "lkx/container/multi_rbtree.h"
 
-bool lkx_rb_m_exist_k64(lkx_RB_M_Tree *tree, int64 key, lkx_RB_M_Node **node)
+bool lkx_rb_m_exist_k64(lkx_RB_M_Tree *tree, int64 key)
 {
   lkx_RB_M_Node *cur = tree->root;
 
@@ -31,7 +31,7 @@ bool lkx_rb_m_exist_k64(lkx_RB_M_Tree *tree, int64 key, lkx_RB_M_Node **node)
   return false;
 }
 
-bool lkx_rb_m_exist_kstr(lkx_RB_M_Tree *tree, lkx_String *key, lkx_RB_M_Node **node)
+bool lkx_rb_m_exist_kstr(lkx_RB_M_Tree *tree, lkx_String *key)
 {
   lkx_RB_M_Node *cur = tree->root;
   

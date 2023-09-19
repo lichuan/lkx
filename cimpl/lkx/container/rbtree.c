@@ -197,7 +197,7 @@ bool lkx_rb_find_kstr(lkx_RB_Tree *tree, lkx_String *key, lkx_RB_Node **node)
   return false;
 }
 
-bool lkx_rb_exist_k64(lkx_RB_Tree *tree, int64 key, lkx_RB_Node **node)
+bool lkx_rb_exist_k64(lkx_RB_Tree *tree, int64 key)
 {
   lkx_RB_Node *cur = tree->root;
 
@@ -227,7 +227,7 @@ bool lkx_rb_exist_k64(lkx_RB_Tree *tree, int64 key, lkx_RB_Node **node)
   return false;
 }
 
-bool lkx_rb_exist_kstr(lkx_RB_Tree *tree, lkx_String *key, lkx_RB_Node **node)
+bool lkx_rb_exist_kstr(lkx_RB_Tree *tree, lkx_String *key)
 {
   lkx_RB_Node *cur = tree->root;
   

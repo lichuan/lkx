@@ -29,8 +29,8 @@ typedef struct lkx_RB_Tree {
 
 bool lkx_rb_find_k64(lkx_RB_Tree *tree, int64 key, lkx_RB_Node **node);
 bool lkx_rb_find_kstr(lkx_RB_Tree *tree, lkx_String *key, lkx_RB_Node **node);
-bool lkx_rb_exist_k64(lkx_RB_Tree *tree, int64 key, lkx_RB_Node **node);
-bool lkx_rb_exist_kstr(lkx_RB_Tree *tree, lkx_String *key, lkx_RB_Node **node);
+bool lkx_rb_exist_k64(lkx_RB_Tree *tree, int64 key);
+bool lkx_rb_exist_kstr(lkx_RB_Tree *tree, lkx_String *key);
 bool lkx_rb_insert_k64(lkx_RB_Tree *tree, int64 key, lkx_RB_Node *node, lkx_RB_Node **replaced_node);
 bool lkx_rb_insert_kstr(lkx_RB_Tree *tree, lkx_String *key, lkx_RB_Node *node, lkx_RB_Node **replaced_node);
 bool lkx_rb_erase_k64(lkx_RB_Tree *tree, int64 key, lkx_RB_Node **node);
