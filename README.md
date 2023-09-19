@@ -273,15 +273,15 @@ uint32 call_giant_count = 0
   All variables declared in the Lkx file will be initialized to their corresponding values by the interpreter:
   - numeric variable is initialized to `0`
   - bool variable is initialized to `false`
-  - array is initialized to `[]`
-  - set is initialized to `{}`
-  - map is initialized to `{:}`
+  - array is initialized to `null`
+  - set is initialized to `null`
+  - map is initialized to `null`
   - struct variable is initialized to `null`
 
 - ## Hub file
-When the Lkx interpreter parses the import statement, it will find the corresponding source file according to the **`__lkx_import_path_from_c_workdir__`** set in the hub file. In addition, the hub file must import all other source files of the project, because the first file read by the interpreter is the hub file, and then parse other imported files in turn.
+When the Lkx interpreter parses the import statement, it will find the corresponding source file according to the **`_lkx_import_path_`** set in the hub file. In addition, the hub file must import all other source files of the project, because the first file read by the interpreter is the hub file, and then parse other imported files in turn.
 ```go
-[string] __lkx_import_path_from_c_workdir__ = 
+[string] _lkx_import_path_ = 
 [
   "./deploy/script/",
   "./deploy/script/3rdlib/",
