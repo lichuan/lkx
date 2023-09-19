@@ -776,7 +776,7 @@ bool lkx_rb_m_insert_kstr(lkx_RB_M_Tree *tree, lkx_String *key, lkx_RB_M_Node *n
         
         if(parent->color == RB_COLOR_BLACK)
         {
-          return false;
+          return true;
         }
 
         break;
@@ -882,7 +882,7 @@ bool lkx_rb_m_insert_kstr(lkx_RB_M_Tree *tree, lkx_String *key, lkx_RB_M_Node *n
         
         if(parent->color == RB_COLOR_BLACK)
         {
-          return false;
+          return true;
         }
 
         break;
@@ -948,14 +948,14 @@ check_uncle:
 
     if(grandpa->parent == NULL)
     {
-      return false;
+      return true;
     }
 
     grandpa->color = RB_COLOR_RED;
 
     if(grandpa->parent->color == RB_COLOR_BLACK)
     {
-      return false;
+      return true;
     }
 
     cur = grandpa;
