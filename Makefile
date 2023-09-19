@@ -20,7 +20,6 @@ all: lkxsample lkxc
 
 OBJS := $(addprefix $(OBJOUT)/, $(LKX_OBJS) $(SAMPLE_OBJ) $(LKXC_OBJ))
 SAMPLE_OBJS := $(addprefix $(OBJOUT)/, $(LKX_OBJS) $(SAMPLE_OBJ))
-LKXC_OBJS := $(addprefix $(OBJOUT)/, $(LKX_OBJS) $(LKX_OBJ))
 CFILES = $(SAMPLE_OBJ:.o=.c) $(addprefix $(LKX_C_INC)/, $(LKX_OBJS:.o=.c))
 LKXC_OBJS := $(addprefix $(OBJOUT)/, $(LKX_OBJS) $(LKXC_OBJ))
 
