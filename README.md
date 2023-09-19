@@ -24,22 +24,20 @@ Lkx is written in standard C, so you can build it on any platform which support 
 |bool    | *boolean value, true or false* |
 |double  | *double precision floating point* |
 |string   | *sequence of characters* |
-|int8, int16, int32, int64    | *signed int of 8~64 bits*    |
-|uint8, uint16, uint32, uint64   | *unsigned int of 8~64 bits* |
-|[int8], [int16], [int32], [int64]  | *array of int8~64* |
-|[uint8], [uint16], [uint32], [uint64] | *array of uint8~64* |
+|int64    | *signed int of 64 bits*    |
+|[int64]  | *array of int64* |
 |[bool], [double], [string] | *array of bool, double, string* |
-|{uint8}, {uint16}, {uint32}, {uint64} | *unordered set of uint8~64* |
-|{m uint8}, {m uint16}, {m uint32}, {m uint64} | *unordered multi set of uint8~64* |
-|{o uint8}, {o uint16}, {o uint32}, {o uint64} | *orderded set of uint8~64* |
-|{mo uint8}, {mo uint16}, {mo uint32}, {mo uint64} | *ordered multi set of uint8~64* |
+|{int64} | *unordered set of int64* |
+|{m int64} | *unordered multi set of int64* |
+|{o int64} | *orderded set of int64* |
+|{mo int64} | *ordered multi set of int64* |
 |{string}, {m string} | *unordered set of string, unordered multi set of string* |
 |{o string}, {mo string} | *ordered set of string, ordered multi set of string* |
-|{uint32:string} | *unordered map, key type: uint32, value type: string* |
+|{int64:string} | *unordered map, key type: int64, value type: string* |
 |{string:string} | *unordered map, key type: string, value type: string* |
-|{m string:uint16} | *unordered multi map* |
-|{o uint8:uint16} | *ordered map* |
-|{mo string:[uint32]} | *ordered multi map, value type: array of uint32* |
+|{m string:int64} | *unordered multi map* |
+|{o int64:int64} | *ordered map* |
+|{mo string:[int64]} | *ordered multi map, value type: array of int64* |
 
 - ## Module unit
 In Lkx, each source file is a module, and each file has a consistent code layout, the source file is logically divided into several parts, each part must be separated by a blank line.  
@@ -55,14 +53,9 @@ shared string brother_name = "bob"
 uint32 brother_height = 170
 uint32 brother_weight = 55
 uint32 brother_age = 31
+
 ```
-The 3rd part is the hot reloading hook function, which is used to control whether the variables declared in the current module need to be reinitialized during hot reloading:  
-```c
-internal void __lkx__hot_reloading_hook__()
-{  
-}
-```
-The 4th part is the definition of the function, shared functions must be defined before local functions, and each function must be separated by a blank line:  
+The 3th part is the definition of the function, shared functions must be defined before local functions, and each function must be separated by a blank line:  
 ```c
 shared bool brother_is_giant()
 {
@@ -80,7 +73,21 @@ bool brother_older_than_sister()
   return brother_age >= sister_age
 }
 ```
-The source code for this sample file *(`path: "family/brother/info.lkx"`)*:  
+The 4th part is the hot reloading hook function, which is used to control whether the variables declared in the current module need to be reinitialized during hot reloading:  
+```c
+internal void _lkx_hot_reloading_()
+{  
+}
+
+internal void _lkx_pre_hot_reloading_()
+{
+}
+
+internal void _lkx_post_hot_reloading_()
+{
+}
+```
+The source code for this sample file *(`"family/brother/info.lkx"`)*:  
 ```go
 import "family/lib/utils.lkx"
 import "family/sister/info.lkx"
@@ -89,10 +96,6 @@ shared string brother_name = "bob"
 uint32 brother_height = 170
 uint32 brother_weight = 55
 uint32 brother_age = 31
-
-internal void __lkx__hot_reloading_hook__()
-{  
-}
 
 shared bool brother_is_tall()
 {
@@ -124,23 +127,30 @@ bool brother_older_than_sister()
 {
   return brother_age >= sister_age
 }
+
+internal void _lkx_hot_reloading_()
+{  
+}
+
+internal void _lkx_pre_hot_reloading_()
+{
+}
+
+internal void _lkx_post_hot_reloading_()
+{
+}
 ```
 
 - ## Hot reloading
 Lkx code is usually called by a c/c++ host program. After we have developed a project and run it for some time, we may need to modify the variables and functions in the script to meet some new requirements. In this case, Lkx can reload the modified script code without restarting the c/c++ host program.  
 
-Before the hot reloading of Lkx script, each variable in the script has been given the corresponding value by many executed functions. During hot reloading, we need to decide which variables should remain unchanged and which variables must be reinitialized based on business logic. Fortunately, Lkx provides an internal hot reloading hook function: **`__lkx_hot_reloading_hook__()`**, In this function, you can specify which variables should remain unchanged during the hot reloading process, as follows *(`path: "family/lib/utils.lkx"`)*:
+Before the hot reloading of Lkx script, each variable in the script has been given the corresponding value by many executed functions. During hot reloading, we need to decide which variables should remain unchanged and which variables must be reinitialized based on business logic. Fortunately, Lkx provides an internal hot reloading hook function: **`_lkx_hot_reloading_()`**, In this function, you can specify which variables should remain unchanged during the hot reloading process, as follows *(`"family/lib/utils.lkx"`)*:
 ```c
 shared uint32 TALL_CM = 190
 shared uint32 FAT_KG = 90
 uint32 GIANT_CM = 300
 uint32 GIANT_KG = 500
 uint32 call_giant_count = 0
-
-internal void __lkx__hot_reloading_hook__()
-{
-  call_giant_count = __LKX_REMAIN_UNCHANGED__
-}
 
 shared bool is_a_giant(uint32 height, uint32 weight)
 {
@@ -157,8 +167,13 @@ shared bool is_a_giant(uint32 height, uint32 weight)
   ++call_giant_count
   return true
 }
+
+internal void _lkx_hot_reloading_()
+{
+  _lkx_remain_unchanged_ = [call_giant_count]
+}
 ```
-The **`call_giant_count`** variable is assigned the special value **`__LKX_REMAIN_UNCHANGED__`** to tell the interpreter that this variable needs to remain unchanged during hot reloading.
+The **`call_giant_count`** variable is added to an array called **`_lkx_remain_unchanged_`** to tell the interpreter that this variable needs to remain unchanged during hot reloading.
 
 - ## User structure
 In order to keep the simplicity of Lkx language, the syntax for defining a structure class with data and functions is not supported in script code, but you can define it in c/c++ code and then export it to the script.  

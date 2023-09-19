@@ -1,9 +1,5 @@
 import "lkxsample/school/class.lkx"
 
-internal void __lkx__hot_reloading__()
-{
-}
-
 shared Student grade_find_tallest_student(Grade grade)
 {
   uint16 tallest_cm = 0
@@ -22,4 +18,8 @@ shared Student grade_find_tallest_student(Grade grade)
   }
 
   return tallest_student
+}
+
+internal void _lkx_hot_reloading_()
+{
 }

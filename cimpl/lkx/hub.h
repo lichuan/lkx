@@ -8,6 +8,7 @@ typedef struct lkx_Hub {
   lkx_Var *var_alive;
   uint32 idx;
   uint32 size;
+  char *hub_path;
 
   //register
   int64 RA;

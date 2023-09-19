@@ -12,15 +12,22 @@ lkx/container/set.o lkx/container/array.o lkx/container/rbtree.o lkx/container/m
 lkx/container/hash.o lkx/container/map.o lkx/container/multi_map.o
 
 SAMPLE_OBJ := lkxsample.o
+LKXC_OBJ := lkxc.o
 DEPFILE = $(OBJOUT)/depfile
 
 .PHONY: all clean dep
-all: lkxsample
+all: lkxsample lkxc
 
-OBJS := $(addprefix $(OBJOUT)/, $(LKX_OBJS) $(SAMPLE_OBJ))
+OBJS := $(addprefix $(OBJOUT)/, $(LKX_OBJS) $(SAMPLE_OBJ) $(LKXC_OBJ))
+SAMPLE_OBJS := $(addprefix $(OBJOUT)/, $(LKX_OBJS) $(SAMPLE_OBJ))
+LKXC_OBJS := $(addprefix $(OBJOUT)/, $(LKX_OBJS) $(LKX_OBJ))
 CFILES = $(SAMPLE_OBJ:.o=.c) $(addprefix $(LKX_C_INC)/, $(LKX_OBJS:.o=.c))
+LKXC_OBJS := $(addprefix $(OBJOUT)/, $(LKX_OBJS) $(LKXC_OBJ))
 
-lkxsample: $(OBJS)
+lkxsample: $(SAMPLE_OBJS)
+	$(CC) -o $@ $^
+
+lkxc: $(LKXC_OBJS)
 	$(CC) -o $@ $^
 
 dep:
@@ -37,3 +44,4 @@ clean:
 	find $(OBJOUT) -name *.o | xargs rm -f
 	rm -f $(DEPFILE)
 	rm -f lkxsample
+	rm -f lkxc

@@ -1,7 +1,3 @@
-internal void __lkx__hot_reloading__()
-{
-}
-
 shared Student class_find_tallest_student(Class cls)
 {
   uint16 tallest_cm = 0
@@ -18,4 +14,8 @@ shared Student class_find_tallest_student(Class cls)
   }
 
   return tallest_student
+}
+
+internal void _lkx_hot_reloading_()
+{
 }

@@ -1,4 +1,4 @@
-[string] __lkx_import_path_from_c_workdir__ =
+[string] _lkx_import_path_ =
 [
   "script/"
 ]
@@ -8,21 +8,6 @@ import "lkxsample/school/school.lkx"
 //variable declaration
 [School] all_schools = new()
 Student tallest_student
-
-internal void __lkx__hot_reloading__()
-{
-  __lkx__remain_unchanged = [all_schools,tallest_student]
-}
-
-internal void __lkx__pre_hot_reloading__()
-{
-
-}
-
-internal void __lkx__post_hot_reloading__()
-{
-  
-}
 
 //called by C host
 shared void add_school_data(CSchool cschool)
@@ -81,4 +66,18 @@ int main()
 
   printf("tallest_student id: %u, name: %s\n", tallest_student.id, tallest_student.name)
   return 0
+}
+
+internal void _lkx_hot_reloading_()
+{
+  _lkx_remain_unchanged_ = [all_schools,tallest_student]
+}
+
+internal void _lkx_pre_hot_reloading_()
+{
+}
+
+internal void _lkx_post_hot_reloading_()
+{
+  
 }
