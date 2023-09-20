@@ -28,14 +28,12 @@ Lkx is written in standard C, so you can build it on any platform which support 
 |[int64]  | *array of int64* |
 |[bool], [double], [string] | *array of bool, double, string* |
 |{int64} | *unordered set of int64* |
-|{m int64} | *unordered multi set of int64* |
 |{o int64} | *orderded set of int64* |
 |{mo int64} | *ordered multi set of int64* |
-|{string}, {m string} | *unordered set of string, unordered multi set of string* |
+|{string} | *unordered set of string* |
 |{o string}, {mo string} | *ordered set of string, ordered multi set of string* |
 |{int64:string} | *unordered map, key type: int64, value type: string* |
 |{string:string} | *unordered map, key type: string, value type: string* |
-|{m string:int64} | *unordered multi map* |
 |{o int64:int64} | *ordered map* |
 |{mo string:[int64]} | *ordered multi map, value type: array of int64* |
 
