@@ -50,9 +50,9 @@ import "family/sister/info.lkx"
 The 2nd part is the declaration and initialization of variables, the shared variable must be declared before the local variable:  
 ```c
 shared string brother_name = "bob"
-uint32 brother_height = 170
-uint32 brother_weight = 55
-uint32 brother_age = 31
+int64 brother_height = 170
+int64 brother_weight = 55
+int64 brother_age = 31
 
 ```
 The 3th part is the definition of the function, shared functions must be defined before local functions, and each function must be separated by a blank line:  
@@ -93,9 +93,9 @@ import "family/lib/utils.lkx"
 import "family/sister/info.lkx"
 
 shared string brother_name = "bob"
-uint32 brother_height = 170
-uint32 brother_weight = 55
-uint32 brother_age = 31
+int64 brother_height = 170
+int64 brother_weight = 55
+int64 brother_age = 31
 
 shared bool brother_is_tall()
 {
@@ -146,13 +146,13 @@ Lkx code is usually called by a c/c++ host program. After we have developed a pr
 
 Before the hot reloading of Lkx script, each variable in the script has been given the corresponding value by many executed functions. During hot reloading, we need to decide which variables should remain unchanged and which variables must be reinitialized based on business logic. Fortunately, Lkx provides an internal hot reloading hook function: **`_lkx_hot_reloading_()`**, In this function, you can specify which variables should remain unchanged during the hot reloading process, as follows *(`"family/lib/utils.lkx"`)*:
 ```c
-shared uint32 TALL_CM = 190
-shared uint32 FAT_KG = 90
-uint32 GIANT_CM = 300
-uint32 GIANT_KG = 500
-uint32 call_giant_count = 0
+shared int64 TALL_CM = 190
+shared int64 FAT_KG = 90
+int64 GIANT_CM = 300
+int64 GIANT_KG = 500
+int64 call_giant_count = 0
 
-shared bool is_a_giant(uint32 height, uint32 weight)
+shared bool is_a_giant(int64 height, int64 weight)
 {
   if(height < GIANT_CM)
   {
@@ -256,17 +256,17 @@ import "family/lib/utils.lkx"
 import "family/sister/info.lkx"
 
 shared string brother_name = "bob"
-uint32 brother_height = 170
-uint32 brother_weight = 55
-uint32 brother_age = 31
+int64 brother_height = 170
+int64 brother_weight = 55
+int64 brother_age = 31
 ```
 Lkx does not support the const keyword, if you want to define a constant, you can change the name of the variable to uppercase. In Lkx script, the uppercase variable name represents a constant. This is also the design philosophy of Lkx based on convention:
 ```c
-shared uint32 TALL_CM = 190
-shared uint32 FAT_KG = 90
-uint32 GIANT_CM = 300
-uint32 GIANT_KG = 500
-uint32 call_giant_count = 0
+shared int64 TALL_CM = 190
+shared int64 FAT_KG = 90
+int64 GIANT_CM = 300
+int64 GIANT_KG = 500
+int64 call_giant_count = 0
 ```
 
 - ## Variable initialization

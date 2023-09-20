@@ -3,7 +3,7 @@ import "lkxsample/school/grade.lkx"
 shared Student school_find_tallest_student(School school)
 {
   [Grade] grades = school.grades
-  uint16 tallest_cm = 0
+  int64 tallest_cm = 0
   Student tallest_student
   foreach(auto grade in grades)
   {

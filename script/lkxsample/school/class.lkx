@@ -1,6 +1,6 @@
 shared Student class_find_tallest_student(Class cls)
 {
-  uint16 tallest_cm = 0
+  int64 tallest_cm = 0
   Student tallest_student
   for(auto student in cls.students)
   {
