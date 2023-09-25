@@ -327,7 +327,3 @@ lkx_Hub is the execution environment in Lkx, and each script function call runs 
 - **goimpl**\
   *go impl of Lkx, need your contribution.*
 
-# Contact
-If you're interested in Lkx language, join the telegram group: [*https://t.me/lkx_language*](https://t.me/lkx_language)
-
-
