@@ -24,3 +24,8 @@ shared Student school_find_tallest_student(School school)
 internal void _lkx_hot_reloading_()
 {
 }
+
+internal void _lkx_post_hot_reloading_()
+{
+  
+}

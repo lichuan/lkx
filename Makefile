@@ -7,7 +7,7 @@ INC = -I$(LKX_C_INC)
 OBJOUT = objfiles
 VPATH = $(LKX_C_INC)
 
-LKX_OBJS = lkx/lkx.o lkx/vm.o lkx/hub.o lkx/type/string.o lkx/type/istruct.o lkx/type/ostruct.o \
+LKX_OBJS = lkx/lkx.o lkx/vm.o lkx/hub.o lkx/parse.o lkx/type/string.o lkx/type/istruct.o lkx/type/ostruct.o \
 lkx/container/set.o lkx/container/array.o lkx/container/rbtree.o lkx/container/multi_rbtree.o \
 lkx/container/hash.o lkx/container/map.o lkx/container/multi_map.o
 
@@ -20,8 +20,9 @@ all: lkxsample lkxc
 
 OBJS := $(addprefix $(OBJOUT)/, $(LKX_OBJS) $(SAMPLE_OBJ) $(LKXC_OBJ))
 SAMPLE_OBJS := $(addprefix $(OBJOUT)/, $(LKX_OBJS) $(SAMPLE_OBJ))
-CFILES = $(SAMPLE_OBJ:.o=.c) $(addprefix $(LKX_C_INC)/, $(LKX_OBJS:.o=.c))
 LKXC_OBJS := $(addprefix $(OBJOUT)/, $(LKX_OBJS) $(LKXC_OBJ))
+
+CFILES = $(SAMPLE_OBJ:.o=.c) $(LKXC_OBJ:.o=.c) $(addprefix $(LKX_C_INC)/, $(LKX_OBJS:.o=.c))
 
 lkxsample: $(SAMPLE_OBJS)
 	$(CC) -o $@ $^

@@ -7,5 +7,6 @@ lkx_Hub* lkx_init(char *hub_path);
 bool lkx_load(lkx_Hub *hub);
 bool lkx_reload(lkx_Hub *hub);
 void lkx_close(lkx_Hub *hub);
+bool lkx_call(lkx_Hub *hub, char *func);
 
 #endif

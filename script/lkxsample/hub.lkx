@@ -1,9 +1,22 @@
+// import path from C workdir
 [string] _lkx_import_path_ =
 [
-  "script/"
+  "script/",
+  "google/3rd/",
+  "tesla/lkxlib/"
 ]
 
 import "lkxsample/school/school.lkx"
+
+struct Student {
+  int64 id;
+  string name;
+  {int64:{mo string:double}} nearMap = new();
+  {string:{o int64:[string]}} arrmap = {
+    "fewfwef":{232:["ooooo","jjj",  "jfwefk"]},
+    "jjj": {993 : ["helow rold"]},
+  }
+}
 
 //variable declaration
 [School] all_schools = new()
@@ -71,10 +84,6 @@ int main()
 internal void _lkx_hot_reloading_()
 {
   _lkx_remain_unchanged_ = [all_schools,tallest_student]
-}
-
-internal void _lkx_pre_hot_reloading_()
-{
 }
 
 internal void _lkx_post_hot_reloading_()

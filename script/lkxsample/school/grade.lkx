@@ -23,3 +23,8 @@ shared Student grade_find_tallest_student(Grade grade)
 internal void _lkx_hot_reloading_()
 {
 }
+
+internal void _lkx_post_hot_reloading_()
+{
+  
+}

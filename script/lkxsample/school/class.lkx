@@ -19,3 +19,8 @@ shared Student class_find_tallest_student(Class cls)
 internal void _lkx_hot_reloading_()
 {
 }
+
+internal void _lkx_post_hot_reloading_()
+{
+  
+}

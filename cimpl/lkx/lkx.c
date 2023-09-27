@@ -1,5 +1,7 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include "lkx/lkx.h"
+#include "lkx/parse.h"
 
 lkx_Hub* lkx_init(char *hub_path)
 {
@@ -10,11 +12,45 @@ lkx_Hub* lkx_init(char *hub_path)
 
 bool lkx_load(lkx_Hub *hub)
 {
+  if(hub->loaded)
+  {
+    return false;
+  }
+
+  FILE *fp = fopen(hub->hub_path, "r");
+
+  if(fp == NULL)
+  {
+    return false;
+  }
+
+  if(!parse_hub_file(hub, fp))
+  {
+    fclose(fp);
+    return false;
+  }
+  
+  fclose(fp);
+  hub->loaded = true;
   return true;
 }
 
 bool lkx_reload(lkx_Hub *hub)
 {
+  FILE *fp = fopen(hub->hub_path, "r");
+
+  if(fp == NULL)
+  {
+    return false;
+  }
+
+  if(!parse_hub_file(hub, fp))
+  {
+    fclose(fp);
+    return false;
+  }
+  
+  fclose(fp);
   return true;
 }
 
