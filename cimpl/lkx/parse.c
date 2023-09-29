@@ -14,6 +14,10 @@ bool parse_hub_file(lkx_Hub *hub, FILE *fp)
   bool import_path_end = false;
   bool path_string_start = false;
   bool path_string_end = false;
+  int string_end_num = 0;
+  bool string_end_comma = true;
+  int comma_num = 0;
+  int line_no_comma = 0;
   bool path_string_empty = true;
   bool comment_is_valid = true;
   bool space_is_valid = true;
@@ -22,21 +26,40 @@ bool parse_hub_file(lkx_Hub *hub, FILE *fp)
   char path_arr[32][128] = {0};
   int row = 0;
   int col = 0;
+  int READ_SZ = 16 * 1024;
+  char hub_buf[READ_SZ];
+  int buf_size = 0;
+  int buf_idx = 0;
 
   while(true)
   {
-    c = fgetc(fp);
-
-    if(c == EOF)
+    if(buf_idx == buf_size)
     {
-      if(ferror(fp) != 0)
+      if(buf_size > 0 && buf_size < READ_SZ)
       {
-        printf("Error happened when parse hub file! file: %s, line: %d\n", file, line_num);
-        return false;
+        return end_is_valid;
       }
 
-      return end_is_valid;
+      buf_size = fread(hub_buf, 1, READ_SZ, fp);
+      buf_idx = 0;
+      printf("Read buf size: %d from hub file\n", buf_size);
+
+      if(buf_size < READ_SZ)
+      {
+        if(ferror(fp) != 0)
+        {
+          printf("Error happened when parse hub file! file: %s, line: %d\n", file, line_num);
+          return false;
+        }
+
+        if(buf_size == 0)
+        {
+          return end_is_valid;
+        }
+      }
     }
+
+    c = hub_buf[buf_idx++];
 
     if(parse_comment)
     {
@@ -94,6 +117,11 @@ bool parse_hub_file(lkx_Hub *hub, FILE *fp)
         return false;
       }
 
+      if(path_string_end)
+      {
+        string_end_comma = false;
+      }
+
       continue;
     }
 
@@ -113,6 +141,16 @@ bool parse_hub_file(lkx_Hub *hub, FILE *fp)
       {
         comment_is_valid = true;
         break;
+      }
+
+      if(path_string_end)
+      {
+        string_end_comma = false;
+      }
+
+      if(comma_num != string_end_num)
+      {
+        ++line_no_comma;
       }
 
       continue;
@@ -183,12 +221,24 @@ bool parse_hub_file(lkx_Hub *hub, FILE *fp)
 
     if(c == ']')
     {
+      if(string_end_num == comma_num && comma_num != 0)
+      {
+        printf("The comma cannot appear at the end of array! file: %s, line: %d\n", file, line_num);
+        return false;
+      }
+
       import_path_end = true;
       continue;
     }
 
     if(c == '"')
     {
+      if(path_string_end)
+      {
+        printf("Parse import_path failed! file: %s, line: %d\n", file, line_num - line_no_comma);
+        return false;
+      }
+
       if(!path_string_start)
       {
         newline_is_valid = false;
@@ -212,6 +262,10 @@ bool parse_hub_file(lkx_Hub *hub, FILE *fp)
       }
 
       path_string_end = true;
+      string_end_comma = true;
+      ++string_end_num;
+      space_is_valid = true;
+      newline_is_valid = true;
       continue;
     }
 
@@ -223,27 +277,36 @@ bool parse_hub_file(lkx_Hub *hub, FILE *fp)
 
     if(path_string_end)
     {
-      if(c != ',')
+      if(string_end_comma)
       {
-        printf("Parse import_path failed! file: %s, line: %d\n", file, line_num);
+        if(c != ',')
+        {
+          printf("Parse import_path failed! file: %s, line: %d\n", file, line_num);
+          return false;
+        }
+
+        path_string_start = false;
+        path_string_end = false;
+        parse_comment = true;
+        path_string_empty = true;
+        ++comma_num;
+        col = 0;
+      }
+      else
+      {
+        printf("Parse import_path failed! file: %s, line: %d\n", file, line_num - line_no_comma);
         return false;
       }
 
-      space_is_valid = true;
-      newline_is_valid = true;
-      path_string_start = false;
-      path_string_end = false;
-      parse_comment = true;
-      col = 0;
       continue;
     }
-    
+
     path_string_empty = false;
     path_arr[row - 1][col] = c;
 
-    if(++col > 128)
+    if(++col > 127)
     {
-      printf("The length of import path cannot exceed 128 bytes! file: %s, line: %d\n", file, line_num);
+      printf("The length of import path cannot exceed 127 bytes! file: %s, line: %d\n", file, line_num);
       return false;
     }
   }
