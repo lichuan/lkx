@@ -311,7 +311,7 @@ bool parse_hub_file(lkx_Hub *hub, FILE *fp)
     }
   }
 
-  printf("Import path:\n");
+  printf("Import path (%d):\n", row);
 
   for(int i = 0; i < row; ++i)
   {
