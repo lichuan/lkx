@@ -1,10 +1,11 @@
+#include <stdlib.h>
 #include "lkx/parse.h"
 
 bool parse_hub_file(lkx_Hub *hub, FILE *fp)
 {
   uint32 line_num = 1;
   char *file = hub->hub_path;
-  int c;
+  int32 c;
   bool end_is_valid = false;
   const char *import_path_head1 = "[string]";
   const char *import_path_head2 = "_lkx_import_path_";
@@ -14,37 +15,33 @@ bool parse_hub_file(lkx_Hub *hub, FILE *fp)
   bool import_path_end = false;
   bool path_string_start = false;
   bool path_string_end = false;
-  int string_end_num = 0;
+  int32 string_end_num = 0;
   bool string_end_comma = true;
-  int comma_num = 0;
-  int line_no_comma = 0;
+  int32 comma_num = 0;
+  int32 line_no_comma = 0;
   bool path_string_empty = true;
   bool comment_is_valid = true;
   bool space_is_valid = true;
   bool newline_is_valid = true;
-  int idx = 0;
-  char path_arr[32][128] = {0};
-  int row = 0;
-  int col = 0;
-  int READ_SZ = 16 * 1024;
-  char hub_buf[READ_SZ];
-  int buf_size = 0;
-  int buf_idx = 0;
+  int32 idx = 0;
+  int32 row = 0;
+  int32 col = 0;
+  lkx_Rbuf *rbuf = calloc(1, sizeof(lkx_Rbuf));
 
   while(true)
   {
-    if(buf_idx == buf_size)
+    if(rbuf->idx == rbuf->size)
     {
-      if(buf_size > 0 && buf_size < READ_SZ)
+      if(rbuf->size > 0 && rbuf->size < READ_SZ)
       {
         return end_is_valid;
       }
 
-      buf_size = fread(hub_buf, 1, READ_SZ, fp);
-      buf_idx = 0;
-      printf("Read buf size: %d from hub file\n", buf_size);
+      rbuf->size = fread(rbuf->buf, 1, READ_SZ, fp);
+      rbuf->idx = 0;
+      printf("Read buf size: %d from hub file\n", rbuf->size);
 
-      if(buf_size < READ_SZ)
+      if(rbuf->size < READ_SZ)
       {
         if(ferror(fp) != 0)
         {
@@ -52,14 +49,14 @@ bool parse_hub_file(lkx_Hub *hub, FILE *fp)
           return false;
         }
 
-        if(buf_size == 0)
+        if(rbuf->size == 0)
         {
           return end_is_valid;
         }
       }
     }
 
-    c = hub_buf[buf_idx++];
+    c = rbuf->buf[rbuf->idx++];
 
     if(parse_comment)
     {
@@ -75,17 +72,17 @@ bool parse_hub_file(lkx_Hub *hub, FILE *fp)
           return false;
         }
 
+        if(!comment_is_valid)
+        {
+          printf("Comment format is invalid! file: %s, line: %d\n", file, line_num);
+          return false;
+        }
+
         comment_2nd = true;
         continue;
       }
       else if(c == '/')
       {
-        if(!comment_is_valid)
-        {
-          printf("Comment is not allowed here! file: %s, line: %d\n", file, line_num);
-          return false;
-        }
-
         comment_1st = true;
         continue;
       }
@@ -93,19 +90,19 @@ bool parse_hub_file(lkx_Hub *hub, FILE *fp)
 
     if(c == '\t')
     {
-      printf("Tab is not allowed in lkx script! file: %s, line: %d\n", file, line_num);
+      printf("Tab is not allowed here! file: %s, line: %d\n", file, line_num);
       return false;
     }
 
     if(c == '\r')
     {
-      printf("CR is not allowed in lkx script! file: %s, line: %d\n", file, line_num);
+      printf("CR is not allowed here! file: %s, line: %d\n", file, line_num);
       return false;
     }
 
     if(c == ';')
     {
-      printf("Semicolon is not allowed in lkx script! file: %s, line: %d\n", file, line_num);
+      printf("Semicolon is not allowed here! file: %s, line: %d\n", file, line_num);
       return false;
     }
 
@@ -302,7 +299,7 @@ bool parse_hub_file(lkx_Hub *hub, FILE *fp)
     }
 
     path_string_empty = false;
-    path_arr[row - 1][col] = c;
+    hub->import_path[row - 1][col] = c;
 
     if(++col > 127)
     {
@@ -313,11 +310,157 @@ bool parse_hub_file(lkx_Hub *hub, FILE *fp)
 
   printf("Import path (%d):\n", row);
 
-  for(int i = 0; i < row; ++i)
+  for(int32 i = 0; i < row; ++i)
   {
-    printf("%s\n", path_arr[i]);
+    printf("%s\n", hub->import_path[i]);
   }
 
+  int32 ret = parse_struct_decl(hub, fp, rbuf, hub->hub_path, line_num);
+
+  if(ret == 0)
+  {
+    return false;
+  }
+
+  if(ret == -1)
+  {
+    return true;
+  }
+
+
+
   return true;
+}
+
+int32 parse_struct_decl(lkx_Hub *hub, FILE *fp, lkx_Rbuf *rbuf, char *modname, int32 line_num)
+{
+  int32 c;
+  bool end_is_valid = false;
+  bool comment_1st = false;
+  bool comment_2nd = false;
+  bool parse_comment = true;
+  const char *import_decl = "import";
+  bool path_string_start = false;
+  bool path_string_end = false;
+  bool comment_is_valid = true;
+  bool space_is_valid = true;
+  bool newline_is_valid = true;
+  int32 idx = 0;
+
+  while(true)
+  {
+    if(rbuf->idx == rbuf->size)
+    {
+      if(rbuf->size > 0 && rbuf->size < READ_SZ)
+      {
+        if(end_is_valid)
+        {
+          return -1;
+        }
+
+        return 0;
+      }
+
+      rbuf->size = fread(rbuf->buf, 1, READ_SZ, fp);
+      rbuf->idx = 0;
+      printf("Read buf size: %d from file: %s\n", rbuf->size, modname);
+
+      if(rbuf->size < READ_SZ)
+      {
+        if(ferror(fp) != 0)
+        {
+          printf("Error happened when parse struct! file: %s, line: %d\n", modname, line_num);
+          return false;
+        }
+
+        if(rbuf->size == 0)
+        {
+          if(end_is_valid)
+          {
+            return -1;
+          }
+
+          return 0;
+        }
+      }
+    }
+
+    c = rbuf->buf[rbuf->idx++];
+
+    if(parse_comment)
+    {
+      if(comment_2nd)
+      {
+        if(c != '\n') continue;
+      }
+      else if(comment_1st)
+      {
+        if(c != '/')
+        {
+          printf("Comment format is invalid! file: %s, line: %d\n", modname, line_num);
+          return false;
+        }
+
+        if(!comment_is_valid)
+        {
+          printf("Comment format is invalid! file: %s, line: %d\n", modname, line_num);
+          return false;
+        }
+
+        comment_2nd = true;
+        continue;
+      }
+      else if(c == '/')
+      {
+        comment_1st = true;
+        continue;
+      }
+    }
+
+    if(c == '\t')
+    {
+      printf("Tab is not allowed here! file: %s, line: %d\n", modname, line_num);
+      return false;
+    }
+
+    if(c == '\r')
+    {
+      printf("CR is not allowed here! file: %s, line: %d\n", modname, line_num);
+      return false;
+    }
+
+    if(c == ';')
+    {
+      printf("Semicolon is not allowed here! file: %s, line: %d\n", modname, line_num);
+      return false;
+    }
+
+    if(c == ' ')
+    {
+      if(!space_is_valid)
+      {
+        printf("Space is not allowed here! file: %s, line: %d\n", modname, line_num);
+        return false;
+      }
+
+      continue;
+    }
+
+    if(c == '\n')
+    {
+      if(!newline_is_valid)
+      {
+        printf("LF is not allowed here! file: %s, line: %d\n", modname, line_num);
+        return false;
+      }
+
+      ++line_num;
+      comment_1st = false;
+      comment_2nd = false;
+      continue;
+    }
+  }
+
+  return 1;
 }
 

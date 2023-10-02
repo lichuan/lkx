@@ -16,6 +16,7 @@ typedef struct lkx_Hub {
   uint32 size;
   char *hub_path;
   bool loaded;
+  char import_path[32][128];
 
   //register
   lkx_Slot RA;

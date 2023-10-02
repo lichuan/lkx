@@ -7,9 +7,10 @@ INC = -I$(LKX_C_INC)
 OBJOUT = objfiles
 VPATH = $(LKX_C_INC)
 
-LKX_OBJS = lkx/lkx.o lkx/vm.o lkx/hub.o lkx/parse.o lkx/type/string.o lkx/type/istruct.o lkx/type/ostruct.o \
-lkx/container/set.o lkx/container/array.o lkx/container/rbtree.o lkx/container/multi_rbtree.o \
-lkx/container/hash.o lkx/container/map.o lkx/container/multi_map.o
+LKX_OBJS = lkx/lkx.o lkx/vm.o lkx/hub.o lkx/parse.o lkx/type/string.o lkx/type/istruct.o \
+lkx/type/ostruct.o lkx/container/set.o lkx/container/array.o lkx/container/rbtree.o \
+lkx/container/rbtree1.o lkx/container/multi_rbtree.o lkx/container/hash.o lkx/container/map.o \
+lkx/container/multi_map.o
 
 SAMPLE_OBJ := lkxsample.o
 LKXC_OBJ := lkxc.o

@@ -5,7 +5,7 @@
 
 lkx_Hub* lkx_init(char *hub_path)
 {
-  lkx_Hub *hub = malloc(sizeof(lkx_Hub));
+  lkx_Hub *hub = calloc(1, sizeof(lkx_Hub));
   hub->hub_path = hub_path;
   return hub;
 }
