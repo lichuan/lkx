@@ -16,5 +16,6 @@ typedef struct lkx_String {
 } lkx_String;
 
 uint64 identifier_hash_id(char *data, uint32 length);
+void lkx_free_str(lkx_String *str);
 
 #endif

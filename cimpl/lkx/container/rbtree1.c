@@ -2,6 +2,12 @@
 #include <stdlib.h>
 #include "lkx/container/rbtree1.h"
 
+void lkx_free_node1(lkx_RB_Node1 *node)
+{
+  lkx_free_str(node->kstr);
+  free(node);
+}
+
 bool lkx_rb_1_exist_k64(lkx_RB_Tree1 *tree, int64 key)
 {
   lkx_RB_Node1 *cur = tree->root;
@@ -403,7 +409,7 @@ bool lkx_rb_1_insert_kstr(lkx_RB_Tree1 *tree, lkx_String *key)
       {
         if(kstr->length < 22)
         {
-          free(node);
+          lkx_free_node1(node);
           return false;
         }
 
@@ -414,7 +420,7 @@ bool lkx_rb_1_insert_kstr(lkx_RB_Tree1 *tree, lkx_String *key)
         {
           if(*s1++ == 0)
           {
-            free(node);
+            lkx_free_node1(node);
             return false;
           }
         }
@@ -429,7 +435,7 @@ bool lkx_rb_1_insert_kstr(lkx_RB_Tree1 *tree, lkx_String *key)
       {
         if(*s1++ == 0)
         {
-          free(node);
+          lkx_free_node1(node);
           return false;
         }
       }
@@ -517,7 +523,7 @@ bool lkx_rb_1_insert_kstr(lkx_RB_Tree1 *tree, lkx_String *key)
         {
           if(kstr->length < 22)
           {
-            free(node);
+            lkx_free_node1(node);
             return false;
           }
           else
@@ -529,7 +535,7 @@ bool lkx_rb_1_insert_kstr(lkx_RB_Tree1 *tree, lkx_String *key)
             {
               if(*s1++ == 0)
               {
-                free(node);
+                lkx_free_node1(node);
                 return false;
               }
             }
@@ -594,7 +600,7 @@ bool lkx_rb_1_insert_kstr(lkx_RB_Tree1 *tree, lkx_String *key)
         {
           if(*s1++ == 0)
           {
-            free(node);
+            lkx_free_node1(node);
             return false;
           }
         }
@@ -780,6 +786,7 @@ check_uncle:
     }
   }
   
+  lkx_free_node1(node);
   return false;
 }
 
@@ -1317,7 +1324,7 @@ bool lkx_rb_1_erase_kstr(lkx_RB_Tree1 *tree, lkx_String *key)
             if(cur == tree->root)
             {
               tree->root = NULL;
-              free(cur);
+              lkx_free_node1(cur);
               return true;
             }
 
@@ -1332,7 +1339,7 @@ bool lkx_rb_1_erase_kstr(lkx_RB_Tree1 *tree, lkx_String *key)
 
             if(cur->color == RB_COLOR_RED)
             {
-              free(cur);
+              lkx_free_node1(cur);
               return true;
             }
 
@@ -1372,14 +1379,14 @@ bool lkx_rb_1_erase_kstr(lkx_RB_Tree1 *tree, lkx_String *key)
 
               if(r_left_color == RB_COLOR_RED)
               {
-                free(cur);
+                lkx_free_node1(cur);
                 return true;
               }
 
               if(right_child->right != NULL)
               {
                 right_child->right->color = RB_COLOR_BLACK;
-                free(cur);
+                lkx_free_node1(cur);
                 return true;
               }
 
@@ -1395,7 +1402,7 @@ bool lkx_rb_1_erase_kstr(lkx_RB_Tree1 *tree, lkx_String *key)
               r_left->parent = parent;
               r_left->right = cur->right;
               cur->right->parent = r_left;
-              free(cur);
+              lkx_free_node1(cur);
               return true;
             }
 
@@ -1407,7 +1414,7 @@ bool lkx_rb_1_erase_kstr(lkx_RB_Tree1 *tree, lkx_String *key)
               r_left->parent = parent;
               r_left->right = cur->right;
               cur->right->parent = r_left;
-              free(cur);
+              lkx_free_node1(cur);
               return true;
             }
 
@@ -1427,7 +1434,7 @@ bool lkx_rb_1_erase_kstr(lkx_RB_Tree1 *tree, lkx_String *key)
             {
               tree->root = left_child;
               left_child->parent = NULL;
-              free(cur);
+              lkx_free_node1(cur);
               return true;
             }
 
@@ -1450,7 +1457,7 @@ bool lkx_rb_1_erase_kstr(lkx_RB_Tree1 *tree, lkx_String *key)
             {
               tree->root = right_child;
               right_child->parent = NULL;
-              free(cur);
+              lkx_free_node1(cur);
               return true;
             }
 
@@ -1466,7 +1473,7 @@ bool lkx_rb_1_erase_kstr(lkx_RB_Tree1 *tree, lkx_String *key)
             right_child->parent = parent;
           }
 
-          free(cur);
+          lkx_free_node1(cur);
           return true;
         }
 
@@ -1485,7 +1492,7 @@ bool lkx_rb_1_erase_kstr(lkx_RB_Tree1 *tree, lkx_String *key)
               if(cur == tree->root)
               {
                 tree->root = NULL;
-                free(cur);
+                lkx_free_node1(cur);
                 return true;
               }
 
@@ -1500,7 +1507,7 @@ bool lkx_rb_1_erase_kstr(lkx_RB_Tree1 *tree, lkx_String *key)
 
               if(cur->color == RB_COLOR_RED)
               {
-                free(cur);
+                lkx_free_node1(cur);
                 return true;
               }
 
@@ -1540,14 +1547,14 @@ bool lkx_rb_1_erase_kstr(lkx_RB_Tree1 *tree, lkx_String *key)
 
                 if(r_left_color == RB_COLOR_RED)
                 {
-                  free(cur);
+                  lkx_free_node1(cur);
                   return true;
                 }
 
                 if(right_child->right != NULL)
                 {
                   right_child->right->color = RB_COLOR_BLACK;
-                  free(cur);
+                  lkx_free_node1(cur);
                   return true;
                 }
 
@@ -1563,7 +1570,7 @@ bool lkx_rb_1_erase_kstr(lkx_RB_Tree1 *tree, lkx_String *key)
                 r_left->parent = parent;
                 r_left->right = cur->right;
                 cur->right->parent = r_left;
-                free(cur);
+                lkx_free_node1(cur);
                 return true;
               }
 
@@ -1575,7 +1582,7 @@ bool lkx_rb_1_erase_kstr(lkx_RB_Tree1 *tree, lkx_String *key)
                 r_left->parent = parent;
                 r_left->right = cur->right;
                 cur->right->parent = r_left;
-                free(cur);
+                lkx_free_node1(cur);
                 return true;
               }
 
@@ -1595,7 +1602,7 @@ bool lkx_rb_1_erase_kstr(lkx_RB_Tree1 *tree, lkx_String *key)
               {
                 tree->root = left_child;
                 left_child->parent = NULL;
-                free(cur);
+                lkx_free_node1(cur);
                 return true;
               }
 
@@ -1618,7 +1625,7 @@ bool lkx_rb_1_erase_kstr(lkx_RB_Tree1 *tree, lkx_String *key)
               {
                 tree->root = right_child;
                 right_child->parent = NULL;
-                free(cur);
+                lkx_free_node1(cur);
                 return true;
               }
 
@@ -1634,7 +1641,7 @@ bool lkx_rb_1_erase_kstr(lkx_RB_Tree1 *tree, lkx_String *key)
               right_child->parent = parent;
             }
 
-            free(cur);
+            lkx_free_node1(cur);
             return true;
           }
         }
@@ -1680,7 +1687,7 @@ bool lkx_rb_1_erase_kstr(lkx_RB_Tree1 *tree, lkx_String *key)
             if(cur == tree->root)
             {
               tree->root = NULL;
-              free(cur);
+              lkx_free_node1(cur);
               return true;
             }
 
@@ -1695,7 +1702,7 @@ bool lkx_rb_1_erase_kstr(lkx_RB_Tree1 *tree, lkx_String *key)
 
             if(cur->color == RB_COLOR_RED)
             {
-              free(cur);
+              lkx_free_node1(cur);
               return true;
             }
 
@@ -1735,14 +1742,14 @@ bool lkx_rb_1_erase_kstr(lkx_RB_Tree1 *tree, lkx_String *key)
 
               if(r_left_color == RB_COLOR_RED)
               {
-                free(cur);
+                lkx_free_node1(cur);
                 return true;
               }
 
               if(right_child->right != NULL)
               {
                 right_child->right->color = RB_COLOR_BLACK;
-                free(cur);
+                lkx_free_node1(cur);
                 return true;
               }
 
@@ -1758,7 +1765,7 @@ bool lkx_rb_1_erase_kstr(lkx_RB_Tree1 *tree, lkx_String *key)
               r_left->parent = parent;
               r_left->right = cur->right;
               cur->right->parent = r_left;
-              free(cur);
+              lkx_free_node1(cur);
               return true;
             }
 
@@ -1770,7 +1777,7 @@ bool lkx_rb_1_erase_kstr(lkx_RB_Tree1 *tree, lkx_String *key)
               r_left->parent = parent;
               r_left->right = cur->right;
               cur->right->parent = r_left;
-              free(cur);
+              lkx_free_node1(cur);
               return true;
             }
 
@@ -1790,7 +1797,7 @@ bool lkx_rb_1_erase_kstr(lkx_RB_Tree1 *tree, lkx_String *key)
             {
               tree->root = left_child;
               left_child->parent = NULL;
-              free(cur);
+              lkx_free_node1(cur);
               return true;
             }
 
@@ -1813,7 +1820,7 @@ bool lkx_rb_1_erase_kstr(lkx_RB_Tree1 *tree, lkx_String *key)
             {
               tree->root = right_child;
               right_child->parent = NULL;
-              free(cur);
+              lkx_free_node1(cur);
               return true;
             }
 
@@ -1829,7 +1836,7 @@ bool lkx_rb_1_erase_kstr(lkx_RB_Tree1 *tree, lkx_String *key)
             right_child->parent = parent;
           }
 
-          free(cur);
+          lkx_free_node1(cur);
           return true;
         }
       }
@@ -1897,7 +1904,7 @@ black_leaf:
         brother->color = parent->color;
         parent->color = RB_COLOR_BLACK;
         brother->right->color = RB_COLOR_BLACK;
-        free(cur);
+        lkx_free_node1(cur);
         return true;
       }
 
@@ -1941,7 +1948,7 @@ black_leaf:
           brother->left->right->parent = brother;
         }
         
-        free(cur);
+        lkx_free_node1(cur);
         return true;
       }
 
@@ -1950,13 +1957,13 @@ black_leaf:
       if(parent->color == RB_COLOR_RED)
       { 
         parent->color = RB_COLOR_BLACK;
-        free(cur);
+        lkx_free_node1(cur);
         return true;
       }
 
       if(parent == tree->root)
       {
-        free(cur);
+        lkx_free_node1(cur);
         return true;
       }
 
@@ -2038,7 +2045,7 @@ black_leaf:
         brother->color = parent->color;
         parent->color = RB_COLOR_BLACK;
         brother->left->color = RB_COLOR_BLACK;
-        free(cur);
+        lkx_free_node1(cur);
         return true;
       }
 
@@ -2082,7 +2089,7 @@ black_leaf:
           brother->right->left->parent = brother;
         }
         
-        free(cur);
+        lkx_free_node1(cur);
         return true;
       }
 
@@ -2091,13 +2098,13 @@ black_leaf:
       if(parent->color == RB_COLOR_RED)
       { 
         parent->color = RB_COLOR_BLACK;
-        free(cur);
+        lkx_free_node1(cur);
         return true;
       }
 
       if(parent == tree->root)
       {
-        free(cur);
+        lkx_free_node1(cur);
         return true;
       }
 
@@ -2140,6 +2147,6 @@ black_leaf:
     goto black_leaf;
   }
 
-  free(cur);
+  lkx_free_node1(cur);
   return true;
 }

@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "lkx/type/string.h"
 
 char ascii_map[128] = {
@@ -30,4 +31,10 @@ uint64 identifier_hash_id(char *data, uint32 length)
   }
 
   return hash_id;
+}
+
+void lkx_free_str(lkx_String *str)
+{
+  free(str->data);
+  free(str);
 }
